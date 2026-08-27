@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>トロッコアドベンチャー</title>
+
+    <!-- 画面のチラつき防止 -->
+    <style id="auth-style">
+        body { display: none !important; }
+    </style>
+
+    <script>
+        // 設定したいパスワードのSHA-256ハッシュ値(このコメントは必ず削除)
+        const TARGET_HASH = "5817ae4948371f9b6b7d94615c0704e6a13ba5a773938351ebd832d0fcdbdf2f";
+
+        // 文字列を変換する関数
+        async function sha256(str) {
+            const buff = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
+            return Array.from(new Uint8Array(buff))
+                .map(b => b.toString(16).padStart(2, "0"))
+                .join("");
+        }
+
+        // パスワード認証処理
+        (async function checkAuth() {
+            const userInput = prompt("パスワードを入力してください:");
+            
+            if (userInput !== null) {
+                const inputHash = await sha256(userInput);
+                
+                if (inputHash === TARGET_HASH) {
+                    // 正解：表示制限用CSSを削除
+                    document.addEventListener("DOMContentLoaded", () => {
+                        const styleTag = document.getElementById("auth-style");
+                        if (styleTag) styleTag.remove();
+                    });
+                    return;
+                }
+            }
+            
+            // 不正解またはキャンセル時
+            alert("パスワードが違います。アクセス権限がありません。");
+            window.location.href = "about:blank";
+        })();
+    </script>
+</head>
+<body>
+
+    <h1>トロッコアドベンチャー 実行画面</h1>
+
+</body>
+</html>
