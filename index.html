@@ -23,9 +23,16 @@
 
         // パスワード認証処理
         (async function checkAuth() {
-            const userInput = prompt("Enter password:");
-            
-            if (userInput !== null) {
+            while (true) {
+                const userInput = prompt("Enter password:");
+                
+                // キャンセルボタンが押された場合
+                if (userInput === null) {
+                    alert("Authentication canceled");
+                    window.location.href = "about:blank";
+                    return;
+                }
+
                 const inputHash = await sha256(userInput);
                 
                 if (inputHash === TARGET_HASH) {
@@ -36,11 +43,10 @@
                     });
                     return;
                 }
+
+                // 不正解の場合（再度promptへ戻る）
+                alert("Incorrect password");
             }
-            
-            // 不正解
-            alert("Incorrect password");
-            window.location.href = "about:blank";
         })();
     </script>
 </head>
