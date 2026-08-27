@@ -23,7 +23,7 @@
 
         // パスワード認証処理
         (async function checkAuth() {
-            const userInput = prompt("Enter the password:");
+            const userInput = prompt("Enter password:");
             
             if (userInput !== null) {
                 const inputHash = await sha256(userInput);
