@@ -10,10 +10,10 @@
     </style>
 
     <script>
-        // 設定したいパスワードのハッシュ値(このコメントは必ず削除)
+        // パスワード
         const TARGET_HASH = "5817ae4948371f9b6b7d94615c0704e6a13ba5a773938351ebd832d0fcdbdf2f";
 
-        // 文字列を変換する関数
+        // 文字列変換関数
         async function sha256(str) {
             const buff = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
             return Array.from(new Uint8Array(buff))
@@ -23,7 +23,7 @@
 
         // パスワード認証処理
         (async function checkAuth() {
-            const userInput = prompt("パスワードを入力してください:");
+            const userInput = prompt("Enter the password:");
             
             if (userInput !== null) {
                 const inputHash = await sha256(userInput);
@@ -38,8 +38,8 @@
                 }
             }
             
-            // 不正解またはキャンセル時
-            alert("パスワードが違います。アクセス権限がありません。");
+            // 不正解
+            alert("Incorrect password");
             window.location.href = "about:blank";
         })();
     </script>
