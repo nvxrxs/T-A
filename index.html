@@ -9,14 +9,14 @@
         html, body {
             margin: 0;
             padding: 0;
-            width: 100%;
-            height: 100%;
+            width: 100vw;
+            height: 100vh;
             overflow: hidden;
             background-color: #000;
             font-family: sans-serif;
             color: #fff;
-            user-select: none; /* テキスト選択を防止 */
-            cursor: none;      /* マウスカーソルを非表示 */
+            user-select: none;
+            cursor: none;
         }
 
         /* 背景メディア（画像・動画）配置コンテナ */
@@ -24,8 +24,8 @@
             position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
+            width: 100vw;
+            height: 100vh;
             z-index: 1;
         }
 
@@ -35,16 +35,14 @@
             left: 0;
             width: 100%;
             height: 100%;
-            object-fit: cover; /* 画面いっぱいにリサイズ */
+            object-fit: cover;
         }
 
-        /* 静止画（ポスター画像）レイヤー */
         #bg-img {
             z-index: 1;
             display: block;
         }
 
-        /* 動画レイヤー（読み込み完了後に透過度を変更して表示） */
         #bg-video {
             z-index: 2;
             opacity: 0;
@@ -55,20 +53,21 @@
             opacity: 1;
         }
 
-        /* 画面表示切り替え用ユーティリティクラス */
         .hidden { display: none !important; }
 
-        /* 共通UIレイヤー（画面中央に要素を配置） */
+        /* 共通UIレイヤー */
         .ui-layer {
             position: relative;
             z-index: 10;
-            width: 100%;
-            height: 100%;
+            width: 100vw;
+            height: 100vh;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.95); /* 投影時の文字可読性を高める強力な影効果 */
+            box-sizing: border-box;
+            padding: 2vh 2vw;
+            text-shadow: 0 0.4vh 1.5vh rgba(0, 0, 0, 0.95);
         }
 
         /* パスワード認証モーダル */
@@ -76,8 +75,8 @@
             position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
+            width: 100vw;
+            height: 100vh;
             z-index: 100;
             background: rgba(0, 0, 0, 0.85);
             display: flex;
@@ -88,7 +87,7 @@
 
         .auth-box {
             background: #222;
-            padding: 4rem 5rem;
+            padding: 4vh 5vw;
             border-radius: 20px;
             border: 3px solid #555;
             text-align: center;
@@ -96,13 +95,13 @@
         }
 
         .auth-box h2 {
-            font-size: 3rem;
-            margin: 0 0 2rem 0;
+            font-size: 4vh;
+            margin: 0 0 2vh 0;
         }
 
         .auth-input {
-            font-size: 2.5rem;
-            padding: 1rem 2rem;
+            font-size: 3.5vh;
+            padding: 1vh 2vw;
             border-radius: 12px;
             border: 2px solid #ccc;
             text-align: center;
@@ -111,26 +110,25 @@
 
         .auth-error {
             color: #ff4d4d;
-            margin-top: 2rem;
-            font-size: 1.8rem;
+            margin-top: 2vh;
+            font-size: 2.5vh;
             font-weight: bold;
         }
 
         /* タイトル画面UI */
         .title {
-            font-size: 8rem; /* ★変更箇所：タイトル大文字化 (6rem -> 8rem) */
-            margin-bottom: 3rem;
+            font-size: 12vh;
+            margin-bottom: 4vh;
             letter-spacing: 0.1em;
             font-weight: 900;
         }
 
         .start-msg {
-            font-size: 3rem; /* ★変更箇所：案内表示拡大 (2.2rem -> 3rem) */
+            font-size: 4vh;
             font-weight: bold;
             animation: blink 1.5s infinite;
         }
 
-        /* 点滅アニメーション */
         @keyframes blink {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.2; }
@@ -138,52 +136,55 @@
 
         /* 選択画面共通UI */
         .section-title {
-            font-size: 5rem; /* ★変更箇所：セクション見出し拡大 (4.5rem -> 5.5rem) */
-            margin-bottom: 4rem;
+            font-size: 8vh;
+            margin-bottom: 4vh;
             letter-spacing: 0.05em;
             font-weight: bold;
         }
 
         .card-container {
             display: flex;
-            gap: 6rem; /* ★変更箇所：カード同士の間隔拡大 (5rem -> 6rem) */
+            gap: 4vw;
+            justify-content: center;
+            align-items: center;
+            max-width: 90vw;
         }
 
-        /* 選択可能カード（遠距離投影用超極大サイズ） */
+        /* 選択可能カード（相対サイズ化で画面内収める） */
         .select-card {
-            width: 450px;  /* ★変更箇所：幅拡大 (380px -> 480px) */
-            height: 450px; /* ★変更箇所：高さ拡大 (380px -> 480px) */
+            width: 32vh;
+            height: 32vh;
+            max-width: 40vw;
+            max-height: 40vw;
             background: rgba(0, 0, 0, 0.65);
-            border: 8px solid #fff; /* ★変更箇所：枠線を強調 (6px -> 8px) */
-            border-radius: 32px;
+            border: 0.8vh solid #fff;
+            border-radius: 3vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 4.5rem; /* ★変更箇所：カード内テキスト拡大 (3.5rem -> 4.5rem) */
+            font-size: 8vh;
             font-weight: bold;
-            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.9);
+            box-shadow: 0 1vh 2.5vh rgba(0, 0, 0, 0.9);
             transition: transform 0.15s, background-color 0.15s, border-color 0.15s;
+            box-sizing: border-box;
         }
 
-        /* カード選択状態（フォーカス時） */
         .select-card.selected {
-            transform: scale(1.12); /* ★変更箇所：選択時の拡大率強化 (1.1 -> 1.12) */
+            transform: scale(1.1);
             background: rgba(255, 255, 255, 0.35);
-            border-color: #ffd700; /* ハイライト黄色 */
-            box-shadow: 0 0 40px rgba(255, 215, 0, 0.6); /* ★変更箇所：発光効果追加 */
+            border-color: #ffd700;
+            box-shadow: 0 0 3vh rgba(255, 215, 0, 0.6);
         }
 
-        /* キー操作ガイド表示 */
         .key-guide {
-            margin-top: 5rem;
-            font-size: 2.2rem; /* ★変更箇所：操作説明拡大 (1.8rem -> 2.2rem) */
+            margin-top: 5vh;
+            font-size: 3vh;
             font-weight: bold;
             color: #eee;
         }
     </style>
 
     <script>
-        // ゲーム内の状態定義
         const GAME_STATES = {
             TITLE: "TITLE",
             GENRE: "GENRE",
@@ -195,7 +196,6 @@
             CLEAR: "CLEAR"
         };
 
-        // 各状態における背景メディア（動画・静止画）のパス設定
         const MEDIA_PATHS = {
             [GAME_STATES.TITLE]:      { video: "media/bg-title.mp4", poster: "media/bg-title.PNG" },
             [GAME_STATES.GENRE]:      { video: "media/bg-title.mp4", poster: "media/bg-title.PNG" },
@@ -207,24 +207,25 @@
             [GAME_STATES.CLEAR]:      { video: "media/bg-clear.mp4", poster: "media/bg-clear.JPG" }
         };
 
-        // システム管理変数
-        let currentState = GAME_STATES.TITLE; // 現在のゲーム状態
-        let selectedIndex = 0;               // 選択カードのインデックス（0:左, 1:右）
-        let currentMediaVideo = null;        // 現在再生中の動画パス
-        let isAuthenticated = false;         // パスワード認証済みフラグ
+        let currentState = GAME_STATES.TITLE;
+        let selectedIndex = 0;
+        let currentMediaVideo = null;
+        let isAuthenticated = false;
 
-        // プレイヤーの選択データ保存用
         let selectedGenre = "";
         let selectedDifficulty = "";
 
-        // パスワード検証用のSHA-256ハッシュ値
         const TARGET_HASH = "5817ae4948371f9b6b7d94615c0704e6a13ba5a773938351ebd832d0fcdbdf2f";
 
         /**
-         * 文字列のSHA-256ハッシュ値を計算する関数
-         * @param {string} str - 入力文字列
-         * @returns {Promise<string>} ハッシュ値（16進数文字列）
+         * 全画面表示を開始する関数
          */
+        function requestFullScreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(() => {});
+            }
+        }
+
         async function sha256(str) {
             const buff = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
             return Array.from(new Uint8Array(buff))
@@ -232,10 +233,6 @@
                 .join("");
         }
 
-        /**
-         * 指定された状態に応じた背景メディア（静止画/動画）を再生・切替する関数
-         * @param {string} stateKey - GAME_STATES のキー
-         */
         function playMedia(stateKey) {
             const media = MEDIA_PATHS[stateKey];
             if (!media) return;
@@ -243,18 +240,15 @@
             const imgElem = document.getElementById("bg-img");
             const videoElem = document.getElementById("bg-video");
 
-            // ポスター（静止画）の設定
             if (media.poster) {
                 imgElem.src = media.poster;
             }
 
-            // 同一動画の再生要求であれば重複読み込みを行わない
             if (currentMediaVideo === media.video && media.video !== "") {
                 return;
             }
             currentMediaVideo = media.video;
 
-            // 動画要素の読み込みと再生処理
             if (media.video) {
                 videoElem.src = media.video;
                 videoElem.load();
@@ -262,10 +256,8 @@
                 const playPromise = videoElem.play();
                 if (playPromise !== undefined) {
                     playPromise.then(() => {
-                        // 再生開始に成功したら動画レイヤーを表示
                         videoElem.classList.add("active");
                     }).catch(() => {
-                        // 自動再生に失敗した場合は静止画を表示状態に維持
                         videoElem.classList.remove("active");
                     });
                 }
@@ -274,10 +266,6 @@
             }
         }
 
-        /**
-         * 選択カードの見た目（フォーカス枠）を更新する関数
-         * @param {string} containerId - 対象コンテナのID
-         */
         function updateCardFocus(containerId) {
             const container = document.getElementById(containerId);
             if (!container) return;
@@ -291,21 +279,14 @@
             });
         }
 
-        /**
-         * ゲーム画面の状態を遷移し、表示UIおよび背景を切り替える関数
-         * @param {string} newState - GAME_STATES の切り替え先状態
-         */
         function changeState(newState) {
             currentState = newState;
-            selectedIndex = 0; // カーソル位置を左（0）にリセット
+            selectedIndex = 0;
 
-            // すべてのUIレイヤーを一旦非表示にする
             document.querySelectorAll(".ui-layer").forEach(elem => elem.classList.add("hidden"));
             
-            // 背景メディアを変更
             playMedia(newState);
 
-            // 指定された状態のUIレイヤーのみを表示する
             if (newState === GAME_STATES.TITLE) {
                 document.getElementById("ui-title").classList.remove("hidden");
             } else if (newState === GAME_STATES.GENRE) {
@@ -317,43 +298,37 @@
             }
         }
 
-        // 全般的なキー操作リスナー（ゲーム操作制御）
         document.addEventListener("keydown", (e) => {
-            // パスワード未認証状態の時はキー操作を受け付けない
             if (!isAuthenticated) return;
 
-            // SpaceキーでのスクロールやEnterキーの既定動作を防止
+            // ユーザー操作時に全画面化を試行
+            requestFullScreen();
+
             if (e.code === "Space" || e.code === "Enter") {
                 e.preventDefault();
             } else {
                 return;
             }
 
-            // ブラウザの制限等で動画が一時停止している場合、キー入力で再生を再試行
             const videoElem = document.getElementById("bg-video");
             if (videoElem.paused && currentMediaVideo) {
                 videoElem.play().then(() => videoElem.classList.add("active")).catch(() => {});
             }
 
-            // 【タイトル画面】における操作
             if (currentState === GAME_STATES.TITLE) {
                 if (e.code === "Enter" || e.code === "Space") {
                     changeState(GAME_STATES.GENRE);
                 }
             } 
-            // 【ジャンル選択画面】における操作
             else if (currentState === GAME_STATES.GENRE) {
                 if (e.code === "Space") {
-                    // Spaceキーで選択枠を移動（トグル切替）
                     selectedIndex = (selectedIndex === 0) ? 1 : 0;
                     updateCardFocus("genre-cards");
                 } else if (e.code === "Enter") {
-                    // Enterキーで決定し、難易度選択画面へ遷移
                     selectedGenre = selectedIndex === 0 ? "ジャンル A" : "ジャンル B";
                     changeState(GAME_STATES.DIFFICULTY);
                 }
             } 
-            // 【難易度選択画面】における操作
             else if (currentState === GAME_STATES.DIFFICULTY) {
                 if (e.code === "Space") {
                     selectedIndex = (selectedIndex === 0) ? 1 : 0;
@@ -364,40 +339,33 @@
             }
         });
 
-        /**
-         * パスワード認証入力時の処理関数
-         * @param {KeyboardEvent} e - キーボードイベント
-         */
         async function handleAuthSubmit(e) {
             if (e.key === "Enter") {
                 e.preventDefault();
-                e.stopPropagation(); // イベントバブリングを防止（認証と同時に画面遷移することを防ぐ）
+                e.stopPropagation();
 
                 const inputVal = e.target.value;
                 const hash = await sha256(inputVal);
 
                 if (hash === TARGET_HASH) {
-                    // 認証成功時：モーダルを閉じ、タイトル画面へ遷移
+                    requestFullScreen(); // パスワード認証時に全画面表示へ
                     document.getElementById("auth-modal").classList.add("hidden");
                     changeState(GAME_STATES.TITLE);
 
-                    // 入力時のEnterキー押下検知が直後のゲームキー操作とバッティングしないよう微小遅延を挟む
                     setTimeout(() => {
                         isAuthenticated = true;
                     }, 50);
                 } else {
-                    // 認証失敗時：エラーメッセージの表示とフォームリセット
                     document.getElementById("auth-error").textContent = "パスワードが正しくありません";
                     e.target.value = "";
                 }
             }
         }
 
-        // DOM構築完了時の初期化処理
         window.addEventListener("DOMContentLoaded", () => {
             playMedia(GAME_STATES.TITLE);
             const passInput = document.getElementById("pass-input");
-            if (passInput) passInput.focus(); // パスワード入力フィールドに即座にフォーカスを当てる
+            if (passInput) passInput.focus();
         });
     </script>
 </head>
