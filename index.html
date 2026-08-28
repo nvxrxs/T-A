@@ -55,22 +55,7 @@
 
         .hidden { display: none !important; }
 
-        /* 共通UIレイヤー */
-        .ui-layer {
-            position: relative;
-            z-index: 10;
-            width: 100vw;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            box-sizing: border-box;
-            padding: 2vh 2vw;
-            text-shadow: 0 0.4vh 1.5vh rgba(0, 0, 0, 0.95);
-        }
-
-        /* パスワード認証モーダル（元のサイズに復元） */
+        /* パスワード認証モーダル（固定pxサイズ指定） */
         #auth-modal {
             position: fixed;
             top: 0;
@@ -87,32 +72,54 @@
 
         .auth-box {
             background: #222;
-            padding: 4rem 5rem;
+            width: 400px;
+            padding: 40px;
             border-radius: 20px;
             border: 3px solid #555;
             text-align: center;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.9);
+            box-sizing: border-box;
         }
 
         .auth-box h2 {
-            font-size: 3rem;
-            margin: 0 0 2rem 0;
+            font-size: 24px;
+            margin: 0 0 20px 0;
+            color: #fff;
+            text-shadow: none;
         }
 
         .auth-input {
-            font-size: 2.5rem;
-            padding: 1rem 2rem;
-            border-radius: 12px;
+            width: 100%;
+            font-size: 20px;
+            padding: 10px 15px;
+            border-radius: 8px;
             border: 2px solid #ccc;
             text-align: center;
             outline: none;
+            box-sizing: border-box;
         }
 
         .auth-error {
             color: #ff4d4d;
-            margin-top: 2rem;
-            font-size: 1.8rem;
+            margin-top: 15px;
+            font-size: 16px;
             font-weight: bold;
+            text-shadow: none;
+        }
+
+        /* 共通UIレイヤー (ゲーム画面用) */
+        .ui-layer {
+            position: relative;
+            z-index: 10;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-sizing: border-box;
+            padding: 2vh 2vw;
+            text-shadow: 0 0.4vh 1.5vh rgba(0, 0, 0, 0.95);
         }
 
         /* タイトル画面UI */
@@ -217,9 +224,6 @@
 
         const TARGET_HASH = "5817ae4948371f9b6b7d94615c0704e6a13ba5a773938351ebd832d0fcdbdf2f";
 
-        /**
-         * 全画面表示を開始する関数
-         */
         function requestFullScreen() {
             const elem = document.documentElement;
             if (!document.fullscreenElement && !document.mozFullScreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement) {
@@ -321,7 +325,7 @@
 
             if (currentState === GAME_STATES.TITLE) {
                 if (e.code === "Enter" || e.code === "Space") {
-                    requestFullScreen(); // タイトル画面でキーを押した瞬間に全画面化
+                    requestFullScreen();
                     changeState(GAME_STATES.GENRE);
                 }
             } 
@@ -375,7 +379,7 @@
 </head>
 <body>
 
-    <!-- パスワード認証モーダル画面（元のサイズ） -->
+    <!-- パスワード認証モーダル画面（固定pxサイズ） -->
     <div id="auth-modal">
         <div class="auth-box">
             <h2>認証が必要です</h2>
