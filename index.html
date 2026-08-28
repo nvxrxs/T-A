@@ -47,7 +47,7 @@
             z-index: 1;
         }
 
-        /* 動画用レイヤー（動画がある時だけ上に重ねる） */
+        /* 動画用レイヤー */
         #bg-video {
             z-index: 2;
         }
@@ -136,7 +136,7 @@
             CLEAR: "CLEAR"            // ⑧-I Clear
         };
 
-        // --- B. メディア一括管理（唯一のファイル名入力エリア） ---
+        // --- B. メディア一括管理 ---
         const MEDIA_PATHS = {
             [GAME_STATES.TITLE]:      { video: "media/bg-title.mp4", poster: "media/bg-title.PNG" },
             [GAME_STATES.GENRE]:      { video: "media/bg-genre.mp4", poster: "media/bg-genre.JPG" },
@@ -148,9 +148,7 @@
             [GAME_STATES.CLEAR]:      { video: "media/bg-clear.mp4", poster: "media/bg-clear.JPG" }
         };
 
-        // 現在のフェーズ（初期値：タイトル画面）
         let currentState = GAME_STATES.TITLE;
-
 
         // --- C. パスワード認証 ---
         const TARGET_HASH = "5817ae4948371f9b6b7d94615c0704e6a13ba5a773938351ebd832d0fcdbdf2f";
@@ -165,33 +163,30 @@
         function revealPage() {
             const styleTag = document.getElementById("auth-style");
             if (styleTag) styleTag.remove();
-            // 画面表示成功時に初期メディア（TITLE）を呼び出し
-            playMedia(GAME_STATES.TITLE);
+            initApp();
         }
 
-        (async function checkAuth() {
-            while (true) {
-                const userInput = prompt("Enter password:");
-                if (userInput === null) {
-                    alert("Authentication canceled");
-                    window.location.href = "about:blank";
-                    return;
-                }
-                const inputHash = await sha256(userInput);
-                if (inputHash === TARGET_HASH) {
-                    if (document.readyState === "loading") {
-                        document.addEventListener("DOMContentLoaded", revealPage);
-                    } else {
-                        revealPage();
+        // 非同期ダイアログ呼び出し（描画ブロック回避）
+        window.addEventListener("DOMContentLoaded", () => {
+            setTimeout(async () => {
+                while (true) {
+                    const userInput = prompt("Enter password:");
+                    if (userInput === null) {
+                        alert("Authentication canceled");
+                        window.location.href = "about:blank";
+                        return;
                     }
-                    return;
+                    const inputHash = await sha256(userInput);
+                    if (inputHash === TARGET_HASH) {
+                        revealPage();
+                        return;
+                    }
+                    alert("Incorrect password");
                 }
-                alert("Incorrect password");
-            }
-        })();
+            }, 100);
+        });
 
-
-        // --- D. メディア呼び出し（召喚）関数 ---
+        // --- D. メディア呼び出し関数 ---
         function playMedia(stateKey) {
             const media = MEDIA_PATHS[stateKey];
             if (!media) return;
@@ -200,10 +195,8 @@
             const videoElem = document.getElementById("bg-video");
             const sourceElem = document.getElementById("bg-source");
 
-            // 1. 静止画を設定
             imgElem.src = media.poster;
 
-            // 2. 動画の読み込みと再生試行
             if (media.video) {
                 sourceElem.src = media.video;
                 videoElem.load();
@@ -221,18 +214,13 @@
             }
         }
 
-
         // --- E. 画面遷移処理 ---
         function changeState(newState) {
             currentState = newState;
 
-            // 全UIレイヤーを非表示化
             document.querySelectorAll(".ui-layer").forEach(elem => elem.classList.add("hidden"));
-
-            // 該当メディアの呼び出し
             playMedia(newState);
 
-            // 状態に応じたUIを表示
             if (newState === GAME_STATES.TITLE) {
                 document.getElementById("ui-title").classList.remove("hidden");
             } else if (newState === GAME_STATES.GENRE) {
@@ -240,24 +228,24 @@
             }
         }
 
+        // --- F. 初期化および入力監視イベントリスナー ---
+        function initApp() {
+            playMedia(GAME_STATES.TITLE);
 
-        // --- F. 入力処理 ---
-        document.addEventListener("keydown", (e) => {
-            if (e.code === "Space") {
-                e.preventDefault(); // スクロール防止
-            }
-
-            if (currentState === GAME_STATES.TITLE) {
-                if (e.code === "Enter" || e.code === "Space") {
-                    changeState(GAME_STATES.GENRE);
+            // キー入力リスナーを確実に登録
+            window.addEventListener("keydown", (e) => {
+                if (e.code === "Space" || e.code === "Enter") {
+                    e.preventDefault();
+                    
+                    if (currentState === GAME_STATES.TITLE) {
+                        changeState(GAME_STATES.GENRE);
+                    }
                 }
-            }
-        });
+            });
+        }
 
-        // ジャンル選択時のダミー処理
         function selectGenre(genreName) {
             console.log("ジャンル選択:", genreName);
-            // 今後、DIFFICULTYフェーズへの遷移等を記述
         }
     </script>
 </head>
