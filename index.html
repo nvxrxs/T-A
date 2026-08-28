@@ -12,30 +12,39 @@
     <!-- 1. 画面デザイン・スタイル設定 (CSS) -->
     <style>
         html, body {
-            margin: 0; padding: 0;
-            width: 100%; height: 100%;
-            overflow: hidden;
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden; /* スクロール禁止 */
             background-color: #000;
             font-family: sans-serif;
             color: #fff;
             user-select: none;
         }
 
+        /* 背景メディアエリア */
         .bg-container {
             position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             z-index: 1;
         }
+
         .bg-media {
-            width: 100%; height: 100%;
+            width: 100%;
+            height: 100%;
             object-fit: cover;
         }
 
+        /* タイトルUI表示レイヤー */
         .ui-layer {
             position: relative;
             z-index: 2;
-            width: 100%; height: 100%;
+            width: 100%;
+            height: 100%;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -43,38 +52,17 @@
             text-shadow: 0 4px 10px rgba(0, 0, 0, 0.9);
         }
 
-        .hidden { display: none !important; }
-
-        /* ① タイトル画面 */
-        .title { font-size: 3.5rem; margin-bottom: 2rem; letter-spacing: 0.1em; }
-        .start-msg { font-size: 1.5rem; animation: blink 1.5s infinite; }
-
-        /* 共通選択UIボックス */
-        .select-container {
-            background: rgba(0, 0, 0, 0.7);
-            padding: 30px 50px;
-            border-radius: 12px;
-            text-align: center;
+        .title {
+            font-size: 3.5rem;
+            margin-bottom: 2rem;
+            letter-spacing: 0.1em;
         }
-        .select-title { font-size: 2rem; margin-bottom: 25px; }
-        .options-container { display: flex; gap: 40px; justify-content: center; }
-        .option-box {
-            border: 3px solid #fff;
-            padding: 20px 40px;
-            border-radius: 8px;
+
+        /* 入力待機テキストの点滅 */
+        .start-msg {
             font-size: 1.5rem;
-            background: rgba(0, 0, 0, 0.5);
-            min-width: 160px;
+            animation: blink 1.5s infinite;
         }
-
-        /* ⑤ 出題画面 */
-        .stage-indicator { font-size: 1.2rem; color: #ffd700; margin-bottom: 10px; }
-        .question-text { font-size: 2.2rem; margin-bottom: 30px; }
-
-        /* クリア・ゲームオーバー画面 */
-        .result-title { font-size: 4rem; font-weight: bold; }
-        .clear-text { color: #00ffcc; }
-        .gameover-text { color: #ff3333; }
 
         @keyframes blink {
             0%, 100% { opacity: 1; }
@@ -121,213 +109,46 @@
         })();
 
 
-        // --- B. 映像ファイル管理定義 ---
+        // --- B. メディア一括管理 ---
+        // 将来映像や画像を追加する際は、ここを書き換えます
         const MEDIA_PATHS = {
-            TITLE:         { video: "media/bg-title.mp4", poster: "media/bg-title.JPG" },
-            GENRE:         { video: "media/bg-genre.mp4", poster: "media/bg-genre.JPG" },
-            DIFFICULTY:    { video: "media/bg-diff.mp4", poster: "media/bg-diff.JPG" },
-            DEPARTURE:     { video: "media/bg-depart.mp4", poster: "media/bg-depart.JPG" }, // ④ 発車進行
-            QUESTION:      { video: "media/bg-quiz.mp4", poster: "media/bg-quiz.JPG" },     // ⑤ 出題ループ
-            FALL:          { video: "media/bg-fall.mp4", poster: "media/bg-fall.JPG" },     // ⑦ 落下演出
-            GAMEOVER:      { video: "media/bg-gameover.mp4", poster: "media/bg-gameover.JPG" },
-            CLEAR:         { video: "media/bg-clear.mp4", poster: "media/bg-clear.JPG" }
+            TITLE:      { video: "media/bg-title.mp4", poster: "media/bg-title.PNG" }, //imakoko
+            GENRE:      { video: "media/bg-genre.mp4", poster: "media/bg-genre.JPG" },
+            DIFFICULTY: { video: "media/bg-diff.mp4", poster: "media/bg-diff.JPG" },
+            PROGRESS:   { video: "media/bg-progress.mp4", poster: "media/bg-progress.JPG" },
+            QUESTION:   { video: "media/bg-quiz.mp4", poster: "media/bg-quiz.JPG" },
+            FALL:       { video: "media/bg-fall.mp4", poster: "media/bg-fall.JPG" },
+            GAMEOVER:   { video: "media/bg-gameover.mp4", poster: "media/bg-gameover.JPG" },
+            CLEAR:      { video: "media/bg-clear.mp4", poster: "media/bg-clear.JPG" }
         };
 
 
-        // --- C. 手書き仕様書のフェーズ定義 ---
+        // --- C. フェーズ定義（状態管理） ---
         const GAME_STATES = {
-            TITLE: "TITLE",                 // ① Title
-            GENRE: "GENRE",                 // ② Genre
-            DIFFICULTY: "DIFFICULTY",       // ③ Difficulty
-            DEPARTURE: "DEPARTURE",         // ④ 発車（進行演出）
-            QUESTION: "QUESTION",           // ⑤ 出題・⑥ 回答待機
-            FALL: "FALL",                   // ⑦-II 落下演出
-            GAMEOVER: "GAMEOVER",           // ⑧-II GAMEOVER画面
-            CLEAR: "CLEAR"                  // ⑧-I CLEARED画面
+            TITLE: "TITLE",           // ① Title
+            GENRE: "GENRE",           // ② Genre
+            DIFFICULTY: "DIFFICULTY", // ③ Difficulty
+            PROGRESS: "PROGRESS",     // ④ 道中の進行（旧 DEPARTURE）
+            QUESTION: "QUESTION",     // ⑤ 出題画面 / ⑥ 回答
+            FALL: "FALL",             // ⑦-II 落下演出
+            GAMEOVER: "GAMEOVER",     // ⑧-II Gameover
+            CLEAR: "CLEAR"            // ⑧-I Clear
         };
 
+        // 現在のフェーズ（初期値：タイトル画面）
         let currentState = GAME_STATES.TITLE;
-        let allQuestions = [];       // 全問題データ
-        let filteredQuestions = [];  // ジャンル・難易度絞り込み後
-        let questionCount = 0;       // 現在の問題カウント (Q=0〜4)
-        const MAX_QUESTIONS = 5;     // 全5問
-
-        let selectedGenre = "";
-        let selectedDifficulty = "";
 
 
-        // --- D. 外部問題データ（JSON）の読み込み ---
-        async function loadQuestions() {
-            try {
-                const response = await fetch("questions.json");
-                allQuestions = await response.json();
-            } catch (error) {
-                console.error("問題データの読み込みに失敗:", error);
-            }
-        }
-        window.addEventListener("DOMContentLoaded", loadQuestions);
-
-
-        // --- E. 条件に合う問題を抽出してシャッフル ---
-        function prepareQuestions() {
-            const pool = allQuestions.filter(q => q.genre === selectedGenre && q.difficulty === selectedDifficulty);
-            
-            // シャッフル (フィッシャー–イェーツ)
-            for (let i = pool.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [pool[i], pool[j]] = [pool[j], pool[i]];
-            }
-            filteredQuestions = pool;
-            questionCount = 0;
-        }
-
-
-        // --- F. 画面切り替え処理 ---
-        function changeState(newState) {
-            currentState = newState;
-            const videoElem = document.getElementById("bg-video");
-
-            // UI要素をすべて一旦非表示
-            document.querySelectorAll(".ui-layer").forEach(el => el.classList.add("hidden"));
-
-            switch (currentState) {
-                case GAME_STATES.TITLE:
-                    setMedia(videoElem, MEDIA_PATHS.TITLE);
-                    document.getElementById("ui-title").classList.remove("hidden");
-                    break;
-
-                case GAME_STATES.GENRE:
-                    setMedia(videoElem, MEDIA_PATHS.GENRE);
-                    document.getElementById("ui-genre").classList.remove("hidden");
-                    break;
-
-                case GAME_STATES.DIFFICULTY:
-                    setMedia(videoElem, MEDIA_PATHS.DIFFICULTY);
-                    document.getElementById("ui-difficulty").classList.remove("hidden");
-                    break;
-
-                case GAME_STATES.DEPARTURE:
-                    setMedia(videoElem, MEDIA_PATHS.DEPARTURE);
-                    // ④ 発車動画の演出（例: 3秒後）を経て ⑤ 出題画面へ自動移行
-                    setTimeout(() => {
-                        changeState(GAME_STATES.QUESTION);
-                    }, 3000);
-                    break;
-
-                case GAME_STATES.QUESTION:
-                    setMedia(videoElem, MEDIA_PATHS.QUESTION);
-                    displayQuestion();
-                    document.getElementById("ui-quiz").classList.remove("hidden");
-                    break;
-
-                case GAME_STATES.FALL:
-                    setMedia(videoElem, MEDIA_PATHS.FALL);
-                    // 落下演出動画（例: 2.5秒）後に ⑧-II GAMEOVER画面へ移行
-                    setTimeout(() => {
-                        changeState(GAME_STATES.GAMEOVER);
-                    }, 2500);
-                    break;
-
-                case GAME_STATES.GAMEOVER:
-                    setMedia(videoElem, MEDIA_PATHS.GAMEOVER);
-                    document.getElementById("ui-gameover").classList.remove("hidden");
-                    break;
-
-                case GAME_STATES.CLEAR:
-                    setMedia(videoElem, MEDIA_PATHS.CLEAR);
-                    document.getElementById("ui-clear").classList.remove("hidden");
-                    break;
-            }
-        }
-
-        function setMedia(videoElem, mediaObj) {
-            videoElem.poster = mediaObj.poster;
-            const sourceElem = videoElem.querySelector("source");
-            sourceElem.src = mediaObj.video;
-            videoElem.load();
-            videoElem.play().catch(() => {});
-        }
-
-        function displayQuestion() {
-            const qData = filteredQuestions[questionCount];
-            document.getElementById("stage-num").textContent = `Q ${questionCount + 1} / ${MAX_QUESTIONS}`;
-            
-            if (qData) {
-                document.getElementById("q-text").textContent = qData.question;
-                document.getElementById("opt-left").innerHTML = `【左: Enter】<br>${qData.optionLeft}`;
-                document.getElementById("opt-right").innerHTML = `【右: Space】<br>${qData.optionRight}`;
-            } else {
-                document.getElementById("q-text").textContent = "該当する問題がありません";
-            }
-        }
-
-
-        // --- G. 回答・進行判定ロジック ---
-        function checkAnswer(selectedChoice) {
-            const qData = filteredQuestions[questionCount];
-            if (!qData) return;
-
-            // ⑦-I 正解の場合
-            if (selectedChoice === qData.answer) {
-                questionCount++;
-                
-                // Q = 5 に達したか判定
-                if (questionCount >= MAX_QUESTIONS) {
-                    changeState(GAME_STATES.CLEAR);
-                } else {
-                    // Q < 5 の場合は ④ 発車（進行演出）へもどる
-                    changeState(GAME_STATES.DEPARTURE);
-                }
-            } 
-            // ⑦-II 不正解の場合
-            else {
-                changeState(GAME_STATES.FALL);
-            }
-        }
-
-
-        // --- H. 物理ボタン（キー入力）制御 ---
+        // --- D. キー入力待機（タイトル画面） ---
         document.addEventListener("keydown", (e) => {
-            if (e.code === "Space") e.preventDefault();
+            if (e.code === "Space") {
+                e.preventDefault(); // スクロール防止
+            }
 
-            // ① Title -> Enter/Spaceで ② Genre へ
             if (currentState === GAME_STATES.TITLE) {
                 if (e.code === "Enter" || e.code === "Space") {
-                    changeState(GAME_STATES.GENRE);
-                }
-            }
-
-            // ② Genre 選択（Enter: A / Space: B）
-            else if (currentState === GAME_STATES.GENRE) {
-                if (e.code === "Enter") selectedGenre = "A";
-                else if (e.code === "Space") selectedGenre = "B";
-
-                if (e.code === "Enter" || e.code === "Space") {
-                    changeState(GAME_STATES.DIFFICULTY);
-                }
-            }
-
-            // ③ Difficulty 選択（Enter: Easy / Space: Hard） -> ④ 発車へ
-            else if (currentState === GAME_STATES.DIFFICULTY) {
-                if (e.code === "Enter") selectedDifficulty = "E";
-                else if (e.code === "Space") selectedDifficulty = "H";
-
-                if (e.code === "Enter" || e.code === "Space") {
-                    prepareQuestions();
-                    changeState(GAME_STATES.DEPARTURE);
-                }
-            }
-
-            // ⑥ 回答選択（Enter: 左 / Space: 右）
-            else if (currentState === GAME_STATES.QUESTION) {
-                if (e.code === "Enter") checkAnswer("left");
-                else if (e.code === "Space") checkAnswer("right");
-            }
-
-            // ⑧ GAMEOVER または CLEARED -> キー入力で ① Title へ戻る
-            else if (currentState === GAME_STATES.GAMEOVER || currentState === GAME_STATES.CLEAR) {
-                if (e.code === "Enter" || e.code === "Space") {
-                    changeState(GAME_STATES.TITLE);
+                    console.log("タイトル画面での入力検出（Enter / Space）");
+                    // ※次のフェーズ実装時にここへ遷移処理を記述します
                 }
             }
         });
@@ -335,63 +156,17 @@
 </head>
 <body>
 
-    <!-- 背景メディアエリア -->
+    <!-- 背景メディア領域 -->
     <div class="bg-container">
         <video id="bg-video" class="bg-media" autoplay loop muted playsinline poster="media/bg-title.JPG">
             <source src="" type="video/mp4">
         </video>
     </div>
 
-    <!-- ① Title 画面 -->
+    <!-- ① タイトル画面UI（入力待機） -->
     <div id="ui-title" class="ui-layer">
-        <h1 class="title">トロッコアドベンチャー</h1>
+        <h1 class="title">Title!!</h1>
         <p class="start-msg">PRESS ENTER TO START</p>
-    </div>
-
-    <!-- ② Genre 選択画面 -->
-    <div id="ui-genre" class="ui-layer hidden">
-        <div class="select-container">
-            <div class="select-title">ジャンルを選択してください</div>
-            <div class="options-container">
-                <div class="option-box">【左: Enter】<br>ジャンル A</div>
-                <div class="option-box">【右: Space】<br>ジャンル B</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- ③ Difficulty 選択画面 -->
-    <div id="ui-difficulty" class="ui-layer hidden">
-        <div class="select-container">
-            <div class="select-title">難易度を選択してください</div>
-            <div class="options-container">
-                <div class="option-box">【左: Enter】<br>EASY</div>
-                <div class="option-box">【右: Space】<br>HARD</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- ⑤ 出題画面 -->
-    <div id="ui-quiz" class="ui-layer hidden">
-        <div class="select-container">
-            <div id="stage-num" class="stage-indicator">Q 1 / 5</div>
-            <div id="q-text" class="question-text">問題文</div>
-            <div class="options-container">
-                <div id="opt-left" class="option-box">【左: Enter】<br>---</div>
-                <div id="opt-right" class="option-box">【右: Space】<br>---</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- ⑧-II GAMEOVER 画面 -->
-    <div id="ui-gameover" class="ui-layer hidden">
-        <h1 class="result-title gameover-text">GAME OVER</h1>
-        <p class="start-msg">PRESS ENTER TO TITLE</p>
-    </div>
-
-    <!-- ⑧-I CLEARED 画面 -->
-    <div id="ui-clear" class="ui-layer hidden">
-        <h1 class="result-title clear-text">GAME CLEARED!</h1>
-        <p class="start-msg">PRESS ENTER TO TITLE</p>
     </div>
 
 </body>
