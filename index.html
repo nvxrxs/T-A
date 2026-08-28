@@ -265,6 +265,24 @@
                 .join("");
         }
 
+        /**
+         * アセットの事前読み込み処理（ラグ軽減）
+         */
+        function preloadMedia() {
+            Object.values(MEDIA_PATHS).forEach(media => {
+                if (media.poster) {
+                    const img = new Image();
+                    img.src = media.poster;
+                }
+                if (media.video) {
+                    const req = new XMLHttpRequest();
+                    req.open('GET', media.video, true);
+                    req.responseType = 'blob';
+                    req.send();
+                }
+            });
+        }
+
         function playMedia(stateKey) {
             const media = MEDIA_PATHS[stateKey];
             if (!media) return;
@@ -283,7 +301,6 @@
 
             if (media.video) {
                 videoElem.src = media.video;
-                videoElem.load();
                 
                 const playPromise = videoElem.play();
                 if (playPromise !== undefined) {
@@ -399,6 +416,7 @@
         }
 
         window.addEventListener("DOMContentLoaded", () => {
+            preloadMedia();
             playMedia(GAME_STATES.TITLE);
             const passInput = document.getElementById("pass-input");
             if (passInput) passInput.focus();
