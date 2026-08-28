@@ -82,6 +82,12 @@
                 .join("");
         }
 
+        // 画面非表示用CSSを削除する関数
+        function revealPage() {
+            const styleTag = document.getElementById("auth-style");
+            if (styleTag) styleTag.remove();
+        }
+
         // パスワード認証処理
         (async function checkAuth() {
             while (true) {
@@ -97,11 +103,12 @@
                 const inputHash = await sha256(userInput);
                 
                 if (inputHash === TARGET_HASH) {
-                    // 正解：表示制限用CSSを削除
-                    document.addEventListener("DOMContentLoaded", () => {
-                        const styleTag = document.getElementById("auth-style");
-                        if (styleTag) styleTag.remove();
-                    });
+                    // 正解：DOMが準備済みなら即削除、未完了ならイベント登録
+                    if (document.readyState === "loading") {
+                        document.addEventListener("DOMContentLoaded", revealPage);
+                    } else {
+                        revealPage();
+                    }
                     return;
                 }
 
@@ -112,10 +119,11 @@
 
         // キー入力待機処理（ゲーム開始などの判定用）
         document.addEventListener("keydown", (e) => {
-            // 例: EnterキーまたはSpaceキーを押した際
+            if (e.code === "Space") {
+                e.preventDefault(); // スクロール防止
+            }
             if (e.code === "Enter" || e.code === "Space") {
                 console.log("Start input detected");
-                // ここにゲーム本編への遷移処理を後ほど記述
             }
         });
     </script>
@@ -125,11 +133,11 @@
     <!-- 背景メディア領域 -->
     <div class="bg-container">
         <!-- 
-            代用画像を使う間：poster="bg-title.jpg" を指定し、src="" は空またはダミー
-            動画差し替え時：src="bg-title.mp4" を設定
+            代用画像を使う間：poster="media/bg-title.JPG" 
+            動画差し替え時：src="media/bg-title.mp4" を設定
         -->
         <video class="bg-media" autoplay loop muted playsinline poster="media/bg-title.JPG">
-            <source src="" type="media/video/mp4">
+            <source src="" type="video/mp4">
         </video>
     </div>
 
