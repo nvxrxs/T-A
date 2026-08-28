@@ -57,7 +57,7 @@
             display: none !important;
         }
 
-        /* タイトルUI表示レイヤー */
+        /* 共通UIレイヤー */
         .ui-layer {
             position: relative;
             z-index: 10;
@@ -70,13 +70,13 @@
             text-shadow: 0 4px 10px rgba(0, 0, 0, 0.9);
         }
 
+        /* タイトル画面UI */
         .title {
             font-size: 3.5rem;
             margin-bottom: 2rem;
             letter-spacing: 0.1em;
         }
 
-        /* 入力待機テキストの点滅 */
         .start-msg {
             font-size: 1.5rem;
             animation: blink 1.5s infinite;
@@ -85,6 +85,40 @@
         @keyframes blink {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.2; }
+        }
+
+        /* ジャンル選択UI */
+        .genre-title {
+            font-size: 2.5rem;
+            margin-bottom: 3rem;
+            letter-spacing: 0.05em;
+        }
+
+        .genre-container {
+            display: flex;
+            gap: 4rem;
+        }
+
+        .genre-box {
+            width: 260px;
+            height: 260px;
+            background: rgba(0, 0, 0, 0.6);
+            border: 4px solid #fff;
+            border-radius: 16px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, background-color 0.2s, border-color 0.2s;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.8);
+        }
+
+        .genre-box:hover {
+            transform: scale(1.05);
+            background: rgba(255, 255, 255, 0.2);
+            border-color: #ffd700;
         }
     </style>
 
@@ -166,7 +200,7 @@
             const videoElem = document.getElementById("bg-video");
             const sourceElem = document.getElementById("bg-source");
 
-            // 1. 静止画を設定（常に確実に表示される基盤）
+            // 1. 静止画を設定
             imgElem.src = media.poster;
 
             // 2. 動画の読み込みと再生試行
@@ -177,10 +211,8 @@
                 const playPromise = videoElem.play();
                 if (playPromise !== undefined) {
                     playPromise.then(() => {
-                        // 動画の再生に成功した場合のみ動画レイヤーを表示
                         videoElem.classList.remove("hidden");
                     }).catch(() => {
-                        // 動画がない・再生失敗時は動画レイヤーを隠して静止画のみ表示
                         videoElem.classList.add("hidden");
                     });
                 }
@@ -190,7 +222,26 @@
         }
 
 
-        // --- E. キー入力待機（タイトル画面） ---
+        // --- E. 画面遷移処理 ---
+        function changeState(newState) {
+            currentState = newState;
+
+            // 全UIレイヤーを非表示化
+            document.querySelectorAll(".ui-layer").forEach(elem => elem.classList.add("hidden"));
+
+            // 該当メディアの呼び出し
+            playMedia(newState);
+
+            // 状態に応じたUIを表示
+            if (newState === GAME_STATES.TITLE) {
+                document.getElementById("ui-title").classList.remove("hidden");
+            } else if (newState === GAME_STATES.GENRE) {
+                document.getElementById("ui-genre").classList.remove("hidden");
+            }
+        }
+
+
+        // --- F. 入力処理 ---
         document.addEventListener("keydown", (e) => {
             if (e.code === "Space") {
                 e.preventDefault(); // スクロール防止
@@ -198,20 +249,23 @@
 
             if (currentState === GAME_STATES.TITLE) {
                 if (e.code === "Enter" || e.code === "Space") {
-                    console.log("タイトル画面での入力検出（Enter / Space）");
+                    changeState(GAME_STATES.GENRE);
                 }
             }
         });
+
+        // ジャンル選択時のダミー処理
+        function selectGenre(genreName) {
+            console.log("ジャンル選択:", genreName);
+            // 今後、DIFFICULTYフェーズへの遷移等を記述
+        }
     </script>
 </head>
 <body>
 
     <!-- 背景メディア領域 -->
     <div class="bg-container">
-        <!-- 確実に表示される静止画レイヤー -->
         <img id="bg-img" class="bg-media" src="" alt="背景画像">
-        
-        <!-- 動画が存在・再生可能な時だけ被さる動画レイヤー -->
         <video id="bg-video" class="bg-media hidden" autoplay loop muted playsinline>
             <source id="bg-source" src="" type="video/mp4">
         </video>
@@ -221,6 +275,15 @@
     <div id="ui-title" class="ui-layer">
         <h1 class="title">Title!!</h1>
         <p class="start-msg">PRESS ENTER TO START</p>
+    </div>
+
+    <!-- ② ジャンル選択UI -->
+    <div id="ui-genre" class="ui-layer hidden">
+        <h2 class="genre-title">SELECT GENRE</h2>
+        <div class="genre-container">
+            <div class="genre-box" onclick="selectGenre('ジャンルA')">ジャンル A</div>
+            <div class="genre-box" onclick="selectGenre('ジャンルB')">ジャンル B</div>
+        </div>
     </div>
 
 </body>
