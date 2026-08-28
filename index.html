@@ -268,7 +268,7 @@
             }
         }
 
-        // キー操作
+        // キー操作リスナー
         document.addEventListener("keydown", (e) => {
             if (!isAuthenticated) return;
 
@@ -305,15 +305,22 @@
             }
         });
 
-        // 認証処理（モーダル方式）
+        // 認証処理（イベントバブリングの防止）
         async function handleAuthSubmit(e) {
             if (e.key === "Enter") {
+                e.preventDefault();
+                e.stopPropagation(); // document側イベントへの波及を止める
+
                 const inputVal = e.target.value;
                 const hash = await sha256(inputVal);
                 if (hash === TARGET_HASH) {
-                    isAuthenticated = true;
                     document.getElementById("auth-modal").classList.add("hidden");
                     changeState(GAME_STATES.TITLE);
+
+                    // 入力完了のEnterキーで即時状態変化が起きないよう一瞬遅延してフラグ更新
+                    setTimeout(() => {
+                        isAuthenticated = true;
+                    }, 50);
                 } else {
                     document.getElementById("auth-error").textContent = "パスワードが正しくありません";
                     e.target.value = "";
@@ -322,9 +329,7 @@
         }
 
         window.addEventListener("DOMContentLoaded", () => {
-            // 背景画像を即時セット
             playMedia(GAME_STATES.TITLE);
-            // パスワード入力にフォーカス
             const passInput = document.getElementById("pass-input");
             if (passInput) passInput.focus();
         });
@@ -350,7 +355,6 @@
         <p class="start-msg">PRESS ENTER TO START</p>
     </div>
 
-    <!--Genre-->
     <div id="ui-genre" class="ui-layer hidden">
         <h2 class="section-title">SELECT GENRE</h2>
         <div id="genre-cards" class="card-container">
