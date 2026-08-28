@@ -4,10 +4,6 @@
     <meta charset="UTF-8">
     <title>トロッコアドベンチャー</title>
 
-    <style id="auth-style">
-        body { display: none !important; }
-    </style>
-
     <style>
         html, body {
             margin: 0;
@@ -41,13 +37,11 @@
             object-fit: cover;
         }
 
-        /* 静止画は常に下地に表示（絶対に黒画面にさせない） */
         #bg-img {
             z-index: 1;
             display: block;
         }
 
-        /* 動画は再生可能になったら上に重ねる */
         #bg-video {
             z-index: 2;
             opacity: 0;
@@ -71,6 +65,46 @@
             justify-content: center;
             align-items: center;
             text-shadow: 0 4px 10px rgba(0, 0, 0, 0.9);
+        }
+
+        /* パスワード認証モーダル */
+        #auth-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .auth-box {
+            background: #222;
+            padding: 2rem 3rem;
+            border-radius: 12px;
+            border: 2px solid #555;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.8);
+        }
+
+        .auth-input {
+            font-size: 1.5rem;
+            padding: 0.5rem 1rem;
+            margin-top: 1rem;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            text-align: center;
+            outline: none;
+        }
+
+        .auth-error {
+            color: #ff4d4d;
+            margin-top: 1rem;
+            font-size: 1rem;
         }
 
         /* タイトル画面UI */
@@ -117,7 +151,6 @@
             transition: transform 0.15s, background-color 0.15s, border-color 0.15s;
         }
 
-        /* 選択中の表示 */
         .select-card.selected {
             transform: scale(1.1);
             background: rgba(255, 255, 255, 0.25);
@@ -157,6 +190,7 @@
         let currentState = GAME_STATES.TITLE;
         let selectedIndex = 0;
         let currentMediaVideo = null;
+        let isAuthenticated = false;
 
         let selectedGenre = "";
         let selectedDifficulty = "";
@@ -170,13 +204,6 @@
                 .join("");
         }
 
-        function revealPage() {
-            const styleTag = document.getElementById("auth-style");
-            if (styleTag) styleTag.remove();
-            initApp();
-        }
-
-        // --- 背景再生処理 ---
         function playMedia(stateKey) {
             const media = MEDIA_PATHS[stateKey];
             if (!media) return;
@@ -184,12 +211,10 @@
             const imgElem = document.getElementById("bg-img");
             const videoElem = document.getElementById("bg-video");
 
-            // 静止画は常に即時反映（パスが存在する場合）
-            if (media.poster && imgElem.getAttribute("src") !== media.poster) {
+            if (media.poster) {
                 imgElem.src = media.poster;
             }
 
-            // 同一動画の場合は切り替えずループ維持
             if (currentMediaVideo === media.video && media.video !== "") {
                 return;
             }
@@ -204,7 +229,6 @@
                     playPromise.then(() => {
                         videoElem.classList.add("active");
                     }).catch(() => {
-                        // 自動再生ブロック時は静止画を表示（黒画面化を防止）
                         videoElem.classList.remove("active");
                     });
                 }
@@ -244,15 +268,16 @@
             }
         }
 
-        // 入力時のイベントリスナー
+        // キー操作
         document.addEventListener("keydown", (e) => {
+            if (!isAuthenticated) return;
+
             if (e.code === "Space" || e.code === "Enter") {
                 e.preventDefault();
             } else {
                 return;
             }
 
-            // 動画再生がブロックされていた場合はここで強制再生
             const videoElem = document.getElementById("bg-video");
             if (videoElem.paused && currentMediaVideo) {
                 videoElem.play().then(() => videoElem.classList.add("active")).catch(() => {});
@@ -268,7 +293,6 @@
                     updateCardFocus("genre-cards");
                 } else if (e.code === "Enter") {
                     selectedGenre = selectedIndex === 0 ? "ジャンル A" : "ジャンル B";
-                    console.log("決定ジャンル:", selectedGenre);
                     changeState(GAME_STATES.DIFFICULTY);
                 }
             } else if (currentState === GAME_STATES.DIFFICULTY) {
@@ -277,42 +301,51 @@
                     updateCardFocus("diff-cards");
                 } else if (e.code === "Enter") {
                     selectedDifficulty = selectedIndex === 0 ? "初級" : "上級";
-                    console.log("決定難易度:", selectedDifficulty);
                 }
             }
         });
 
-        function initApp() {
-            changeState(GAME_STATES.TITLE);
-            window.focus();
+        // 認証処理（モーダル方式）
+        async function handleAuthSubmit(e) {
+            if (e.key === "Enter") {
+                const inputVal = e.target.value;
+                const hash = await sha256(inputVal);
+                if (hash === TARGET_HASH) {
+                    isAuthenticated = true;
+                    document.getElementById("auth-modal").classList.add("hidden");
+                    changeState(GAME_STATES.TITLE);
+                } else {
+                    document.getElementById("auth-error").textContent = "パスワードが正しくありません";
+                    e.target.value = "";
+                }
+            }
         }
 
-        (async function checkAuth() {
-            while (true) {
-                const userInput = prompt("Enter password:");
-                if (userInput === null) {
-                    alert("Authentication canceled");
-                    window.location.href = "about:blank";
-                    return;
-                }
-                const inputHash = await sha256(userInput);
-                if (inputHash === TARGET_HASH) {
-                    revealPage();
-                    return;
-                }
-                alert("Incorrect password");
-            }
-        })();
+        window.addEventListener("DOMContentLoaded", () => {
+            // 背景画像を即時セット
+            playMedia(GAME_STATES.TITLE);
+            // パスワード入力にフォーカス
+            const passInput = document.getElementById("pass-input");
+            if (passInput) passInput.focus();
+        });
     </script>
 </head>
 <body>
+
+    <div id="auth-modal">
+        <div class="auth-box">
+            <h2>認証が必要です</h2>
+            <input type="password" id="pass-input" class="auth-input" placeholder="パスワードを入力" onkeydown="handleAuthSubmit(event)">
+            <div id="auth-error" class="auth-error"></div>
+        </div>
+    </div>
 
     <div class="bg-container">
         <img id="bg-img" class="bg-media" src="" alt="背景画像">
         <video id="bg-video" class="bg-media" autoplay loop muted playsinline></video>
     </div>
 
-    <div id="ui-title" class="ui-layer">
+    <div id="ui-title" class="ui-layer hidden">
         <h1 class="title">Title!!</h1>
         <p class="start-msg">PRESS ENTER TO START</p>
     </div>
