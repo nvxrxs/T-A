@@ -371,6 +371,7 @@
                     updateCardFocus("diff-cards");
                 } else if (e.code === "Enter") {
                     selectedDifficulty = selectedIndex === 0 ? "初級" : "上級";
+                    changeState(GAME_STATES.PROGRESS);
                 }
             }
         });
