@@ -4,12 +4,10 @@
     <meta charset="UTF-8">
     <title>トロッコアドベンチャー</title>
 
-    <!-- 0. 認証前の画面隠しCSS -->
     <style id="auth-style">
         body { display: none !important; }
     </style>
 
-    <!-- 1. 画面デザイン・スタイル設定 (CSS) -->
     <style>
         html, body {
             margin: 0;
@@ -133,7 +131,6 @@
         }
     </style>
 
-    <!-- 2. ゲームロジック・進行管理 (JavaScript) -->
     <script>
         const GAME_STATES = {
             TITLE: "TITLE",
@@ -179,7 +176,7 @@
             initApp();
         }
 
-        // --- 背景再生処理（絶対黒画面防止） ---
+        // --- 背景再生処理 ---
         function playMedia(stateKey) {
             const media = MEDIA_PATHS[stateKey];
             if (!media) return;
@@ -187,12 +184,12 @@
             const imgElem = document.getElementById("bg-img");
             const videoElem = document.getElementById("bg-video");
 
-            // 静止画は常にセットして描画を維持
-            if (media.poster) {
+            // 静止画は常に即時反映（パスが存在する場合）
+            if (media.poster && imgElem.getAttribute("src") !== media.poster) {
                 imgElem.src = media.poster;
             }
 
-            // 同一動画の場合は切り替えない
+            // 同一動画の場合は切り替えずループ維持
             if (currentMediaVideo === media.video && media.video !== "") {
                 return;
             }
@@ -207,7 +204,7 @@
                     playPromise.then(() => {
                         videoElem.classList.add("active");
                     }).catch(() => {
-                        // 自動再生ブロック時は静止画で維持（黒画面化を防止）
+                        // 自動再生ブロック時は静止画を表示（黒画面化を防止）
                         videoElem.classList.remove("active");
                     });
                 }
@@ -247,7 +244,7 @@
             }
         }
 
-        // 入力時に動画再生を強制復帰させる処理を含めたイベントリスナー
+        // 入力時のイベントリスナー
         document.addEventListener("keydown", (e) => {
             if (e.code === "Space" || e.code === "Enter") {
                 e.preventDefault();
@@ -255,7 +252,7 @@
                 return;
             }
 
-            // 初回操作時に動画再生がブロックされていた場合は再試行
+            // 動画再生がブロックされていた場合はここで強制再生
             const videoElem = document.getElementById("bg-video");
             if (videoElem.paused && currentMediaVideo) {
                 videoElem.play().then(() => videoElem.classList.add("active")).catch(() => {});
@@ -286,7 +283,7 @@
         });
 
         function initApp() {
-            playMedia(GAME_STATES.TITLE);
+            changeState(GAME_STATES.TITLE);
             window.focus();
         }
 
@@ -310,19 +307,16 @@
 </head>
 <body>
 
-    <!-- 背景メディア領域 -->
     <div class="bg-container">
         <img id="bg-img" class="bg-media" src="" alt="背景画像">
         <video id="bg-video" class="bg-media" autoplay loop muted playsinline></video>
     </div>
 
-    <!-- ① タイトル画面UI -->
     <div id="ui-title" class="ui-layer">
         <h1 class="title">Title!!</h1>
         <p class="start-msg">PRESS ENTER TO START</p>
     </div>
 
-    <!-- ② ジャンル選択UI -->
     <div id="ui-genre" class="ui-layer hidden">
         <h2 class="section-title">SELECT GENRE</h2>
         <div id="genre-cards" class="card-container">
@@ -332,7 +326,6 @@
         <p class="key-guide">[ SPACE ]: 選択移動 / [ ENTER ]: 決定</p>
     </div>
 
-    <!-- ③ 難易度選択UI -->
     <div id="ui-difficulty" class="ui-layer hidden">
         <h2 class="section-title">SELECT DIFFICULTY</h2>
         <div id="diff-cards" class="card-container">
