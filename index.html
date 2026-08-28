@@ -70,13 +70,13 @@
             text-shadow: 0 0.4vh 1.5vh rgba(0, 0, 0, 0.95);
         }
 
-        /* パスワード認証モーダル */
+        /* パスワード認証モーダル（元のサイズに復元） */
         #auth-modal {
             position: fixed;
             top: 0;
             left: 0;
-            width: 100vw;
-            height: 100vh;
+            width: 100%;
+            height: 100%;
             z-index: 100;
             background: rgba(0, 0, 0, 0.85);
             display: flex;
@@ -87,7 +87,7 @@
 
         .auth-box {
             background: #222;
-            padding: 4vh 5vw;
+            padding: 4rem 5rem;
             border-radius: 20px;
             border: 3px solid #555;
             text-align: center;
@@ -95,13 +95,13 @@
         }
 
         .auth-box h2 {
-            font-size: 4vh;
-            margin: 0 0 2vh 0;
+            font-size: 3rem;
+            margin: 0 0 2rem 0;
         }
 
         .auth-input {
-            font-size: 3.5vh;
-            padding: 1vh 2vw;
+            font-size: 2.5rem;
+            padding: 1rem 2rem;
             border-radius: 12px;
             border: 2px solid #ccc;
             text-align: center;
@@ -110,8 +110,8 @@
 
         .auth-error {
             color: #ff4d4d;
-            margin-top: 2vh;
-            font-size: 2.5vh;
+            margin-top: 2rem;
+            font-size: 1.8rem;
             font-weight: bold;
         }
 
@@ -150,7 +150,7 @@
             max-width: 90vw;
         }
 
-        /* 選択可能カード（相対サイズ化で画面内収める） */
+        /* 選択可能カード */
         .select-card {
             width: 32vh;
             height: 32vh;
@@ -221,8 +221,15 @@
          * 全画面表示を開始する関数
          */
         function requestFullScreen() {
-            if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen().catch(() => {});
+            const elem = document.documentElement;
+            if (!document.fullscreenElement && !document.mozFullScreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement) {
+                if (elem.requestFullscreen) {
+                    elem.requestFullscreen().catch(() => {});
+                } else if (elem.webkitRequestFullscreen) {
+                    elem.webkitRequestFullscreen();
+                } else if (elem.msRequestFullscreen) {
+                    elem.msRequestFullscreen();
+                }
             }
         }
 
@@ -301,9 +308,6 @@
         document.addEventListener("keydown", (e) => {
             if (!isAuthenticated) return;
 
-            // ユーザー操作時に全画面化を試行
-            requestFullScreen();
-
             if (e.code === "Space" || e.code === "Enter") {
                 e.preventDefault();
             } else {
@@ -317,6 +321,7 @@
 
             if (currentState === GAME_STATES.TITLE) {
                 if (e.code === "Enter" || e.code === "Space") {
+                    requestFullScreen(); // タイトル画面でキーを押した瞬間に全画面化
                     changeState(GAME_STATES.GENRE);
                 }
             } 
@@ -348,7 +353,6 @@
                 const hash = await sha256(inputVal);
 
                 if (hash === TARGET_HASH) {
-                    requestFullScreen(); // パスワード認証時に全画面表示へ
                     document.getElementById("auth-modal").classList.add("hidden");
                     changeState(GAME_STATES.TITLE);
 
@@ -371,7 +375,7 @@
 </head>
 <body>
 
-    <!-- パスワード認証モーダル画面 -->
+    <!-- パスワード認証モーダル画面（元のサイズ） -->
     <div id="auth-modal">
         <div class="auth-box">
             <h2>認証が必要です</h2>
