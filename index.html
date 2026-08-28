@@ -34,15 +34,33 @@
         }
 
         .bg-media {
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
             height: 100%;
             object-fit: cover;
         }
 
+        /* 静止画用レイヤー */
+        #bg-img {
+            z-index: 1;
+        }
+
+        /* 動画用レイヤー（動画がある時だけ上に重ねる） */
+        #bg-video {
+            z-index: 2;
+        }
+
+        /* 非表示クラス */
+        .hidden {
+            display: none !important;
+        }
+
         /* タイトルUI表示レイヤー */
         .ui-layer {
             position: relative;
-            z-index: 2;
+            z-index: 10;
             width: 100%;
             height: 100%;
             display: flex;
@@ -85,7 +103,6 @@
         };
 
         // --- B. メディア一括管理（唯一のファイル名入力エリア） ---
-        // メディアパスの変更・追加はここだけで完了します
         const MEDIA_PATHS = {
             [GAME_STATES.TITLE]:      { video: "media/bg-title.mp4", poster: "media/bg-title.PNG" },
             [GAME_STATES.GENRE]:      { video: "media/bg-genre.mp4", poster: "media/bg-genre.JPG" },
@@ -141,19 +158,35 @@
 
 
         // --- D. メディア呼び出し（召喚）関数 ---
-        // 引数に GAME_STATES の値を指定するだけで、対応する動画/画像を一括召喚します
         function playMedia(stateKey) {
             const media = MEDIA_PATHS[stateKey];
             if (!media) return;
 
+            const imgElem = document.getElementById("bg-img");
             const videoElem = document.getElementById("bg-video");
             const sourceElem = document.getElementById("bg-source");
 
-            videoElem.poster = media.poster;
-            sourceElem.src = media.video;
-            
-            videoElem.load();
-            videoElem.play().catch(() => {}); // ブラウザの自動再生制御の例外防止
+            // 1. 静止画を設定（常に確実に表示される基盤）
+            imgElem.src = media.poster;
+
+            // 2. 動画の読み込みと再生試行
+            if (media.video) {
+                sourceElem.src = media.video;
+                videoElem.load();
+                
+                const playPromise = videoElem.play();
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        // 動画の再生に成功した場合のみ動画レイヤーを表示
+                        videoElem.classList.remove("hidden");
+                    }).catch(() => {
+                        // 動画がない・再生失敗時は動画レイヤーを隠して静止画のみ表示
+                        videoElem.classList.add("hidden");
+                    });
+                }
+            } else {
+                videoElem.classList.add("hidden");
+            }
         }
 
 
@@ -166,7 +199,6 @@
             if (currentState === GAME_STATES.TITLE) {
                 if (e.code === "Enter" || e.code === "Space") {
                     console.log("タイトル画面での入力検出（Enter / Space）");
-                    // 次のフェーズへ移動する際は、例: playMedia(GAME_STATES.GENRE); のように呼び出します
                 }
             }
         });
@@ -174,16 +206,20 @@
 </head>
 <body>
 
-    <!-- 背景メディア領域（JavaScript側から召喚制御するため初期指定なし） -->
+    <!-- 背景メディア領域 -->
     <div class="bg-container">
-        <video id="bg-video" class="bg-media" autoplay loop muted playsinline>
+        <!-- 確実に表示される静止画レイヤー -->
+        <img id="bg-img" class="bg-media" src="" alt="背景画像">
+        
+        <!-- 動画が存在・再生可能な時だけ被さる動画レイヤー -->
+        <video id="bg-video" class="bg-media hidden" autoplay loop muted playsinline>
             <source id="bg-source" src="" type="video/mp4">
         </video>
     </div>
 
     <!-- ① タイトル画面UI（入力待機） -->
     <div id="ui-title" class="ui-layer">
-        <h1 class="title">トロッコアドベンチャー</h1>
+        <h1 class="title">Title!!</h1>
         <p class="start-msg">PRESS ENTER TO START</p>
     </div>
 
