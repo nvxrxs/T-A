@@ -166,26 +166,6 @@
             initApp();
         }
 
-        // 非同期ダイアログ呼び出し（描画ブロック回避）
-        window.addEventListener("DOMContentLoaded", () => {
-            setTimeout(async () => {
-                while (true) {
-                    const userInput = prompt("Enter password:");
-                    if (userInput === null) {
-                        alert("Authentication canceled");
-                        window.location.href = "about:blank";
-                        return;
-                    }
-                    const inputHash = await sha256(userInput);
-                    if (inputHash === TARGET_HASH) {
-                        revealPage();
-                        return;
-                    }
-                    alert("Incorrect password");
-                }
-            }, 100);
-        });
-
         // --- D. メディア呼び出し関数 ---
         function playMedia(stateKey) {
             const media = MEDIA_PATHS[stateKey];
@@ -228,21 +208,46 @@
             }
         }
 
-        // --- F. 初期化および入力監視イベントリスナー ---
+        // --- F. 初期化およびイベント管理 ---
         function initApp() {
             playMedia(GAME_STATES.TITLE);
-
-            // キー入力リスナーを確実に登録
-            window.addEventListener("keydown", (e) => {
-                if (e.code === "Space" || e.code === "Enter") {
-                    e.preventDefault();
-                    
-                    if (currentState === GAME_STATES.TITLE) {
-                        changeState(GAME_STATES.GENRE);
-                    }
-                }
-            });
+            window.focus(); // 画面にフォーカスを当てる
         }
+
+        // グローバルでのキー検出（DOMContentLoadedや認証のタイマーに依存しない）
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "Enter" || e.code === "Space") {
+                e.preventDefault();
+                if (currentState === GAME_STATES.TITLE) {
+                    changeState(GAME_STATES.GENRE);
+                }
+            }
+        });
+
+        // 画面クリック時にもタイトル画面から遷移可能（フォーカス復帰用）
+        document.addEventListener("click", () => {
+            if (currentState === GAME_STATES.TITLE) {
+                changeState(GAME_STATES.GENRE);
+            }
+        });
+
+        // 認証処理の起動
+        (async function checkAuth() {
+            while (true) {
+                const userInput = prompt("Enter password:");
+                if (userInput === null) {
+                    alert("Authentication canceled");
+                    window.location.href = "about:blank";
+                    return;
+                }
+                const inputHash = await sha256(userInput);
+                if (inputHash === TARGET_HASH) {
+                    revealPage();
+                    return;
+                }
+                alert("Incorrect password");
+            }
+        })();
 
         function selectGenre(genreName) {
             console.log("ジャンル選択:", genreName);
