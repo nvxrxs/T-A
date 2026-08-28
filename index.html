@@ -55,7 +55,7 @@
 
         .hidden { display: none !important; }
 
-        /* パスワード認証モーダル（固定pxサイズ指定） */
+        /* パスワード認証モーダル（固定pxサイズ） */
         #auth-modal {
             position: fixed;
             top: 0;
@@ -72,8 +72,8 @@
 
         .auth-box {
             background: #222;
-            width: 400px;
-            padding: 40px;
+            width: 100px; /* ボックス幅調整箇所 */
+            padding: 10px; /* 余白調整箇所 */
             border-radius: 20px;
             border: 3px solid #555;
             text-align: center;
@@ -82,7 +82,7 @@
         }
 
         .auth-box h2 {
-            font-size: 24px;
+            font-size: 6px; /* 見出し文字サイズ調整箇所 */
             margin: 0 0 20px 0;
             color: #fff;
             text-shadow: none;
@@ -90,8 +90,8 @@
 
         .auth-input {
             width: 100%;
-            font-size: 20px;
-            padding: 10px 15px;
+            font-size: 5px; /* 入力文字サイズ調整箇所 */
+            padding: 2.5px 4px; /* 入力枠余白調整箇所 */
             border-radius: 8px;
             border: 2px solid #ccc;
             text-align: center;
@@ -107,7 +107,7 @@
             text-shadow: none;
         }
 
-        /* 共通UIレイヤー (ゲーム画面用) */
+        /* 共通UIレイヤー */
         .ui-layer {
             position: relative;
             z-index: 10;
@@ -134,6 +134,13 @@
             font-size: 4vh;
             font-weight: bold;
             animation: blink 1.5s infinite;
+        }
+
+        .fullscreen-guide {
+            margin-top: 2vh;
+            font-size: 2.5vh;
+            color: #aaa;
+            font-weight: bold;
         }
 
         @keyframes blink {
@@ -224,15 +231,26 @@
 
         const TARGET_HASH = "5817ae4948371f9b6b7d94615c0704e6a13ba5a773938351ebd832d0fcdbdf2f";
 
-        function requestFullScreen() {
-            const elem = document.documentElement;
+        /**
+         * 全画面表示の切り替え処理
+         */
+        function toggleFullScreen() {
             if (!document.fullscreenElement && !document.mozFullScreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement) {
+                const elem = document.documentElement;
                 if (elem.requestFullscreen) {
                     elem.requestFullscreen().catch(() => {});
                 } else if (elem.webkitRequestFullscreen) {
                     elem.webkitRequestFullscreen();
                 } else if (elem.msRequestFullscreen) {
                     elem.msRequestFullscreen();
+                }
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen().catch(() => {});
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                } else if (document.msExitFullscreen) {
+                    document.msExitFullscreen();
                 }
             }
         }
@@ -312,6 +330,13 @@
         document.addEventListener("keydown", (e) => {
             if (!isAuthenticated) return;
 
+            // Fキー押下時の全画面切替（タイトル画面限定）
+            if (currentState === GAME_STATES.TITLE && (e.code === "KeyF" || e.key === "f" || e.key === "F")) {
+                e.preventDefault();
+                toggleFullScreen();
+                return;
+            }
+
             if (e.code === "Space" || e.code === "Enter") {
                 e.preventDefault();
             } else {
@@ -325,7 +350,6 @@
 
             if (currentState === GAME_STATES.TITLE) {
                 if (e.code === "Enter" || e.code === "Space") {
-                    requestFullScreen();
                     changeState(GAME_STATES.GENRE);
                 }
             } 
@@ -379,7 +403,7 @@
 </head>
 <body>
 
-    <!-- パスワード認証モーダル画面（固定pxサイズ） -->
+    <!-- パスワード認証モーダル画面 -->
     <div id="auth-modal">
         <div class="auth-box">
             <h2>認証が必要です</h2>
@@ -398,6 +422,7 @@
     <div id="ui-title" class="ui-layer hidden">
         <h1 class="title">Title!!</h1>
         <p class="start-msg">PRESS ENTER TO START</p>
+        <p class="fullscreen-guide">[ F ]: 全画面表示 切替</p>
     </div>
 
     <!-- ジャンル選択画面 UI -->
