@@ -24,7 +24,7 @@
             cursor: none;
         }
 
-        /* 背景メディアエリア */
+        /* 背景エリア */
         .bg-container {
             position: fixed;
             top: 0;
@@ -43,8 +43,22 @@
             object-fit: cover;
         }
 
-        #bg-img { z-index: 1; }
-        #bg-video { z-index: 2; }
+        /* 静止画は常に下地に表示（絶対に黒画面にさせない） */
+        #bg-img {
+            z-index: 1;
+            display: block;
+        }
+
+        /* 動画は再生可能になったら上に重ねる */
+        #bg-video {
+            z-index: 2;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        #bg-video.active {
+            opacity: 1;
+        }
 
         .hidden { display: none !important; }
 
@@ -105,12 +119,11 @@
             transition: transform 0.15s, background-color 0.15s, border-color 0.15s;
         }
 
-        /* 物理ボタンで選択中のスタイル（ホバー効果は廃止） */
+        /* 選択中の表示 */
         .select-card.selected {
             transform: scale(1.1);
             background: rgba(255, 255, 255, 0.25);
             border-color: #ffd700;
-            box-shadow: 0 0 25px rgba(255, 215, 0, 0.8);
         }
 
         .key-guide {
@@ -166,25 +179,24 @@
             initApp();
         }
 
-        // --- メディア制御（背景黒化防止処理追加） ---
+        // --- 背景再生処理（絶対黒画面防止） ---
         function playMedia(stateKey) {
             const media = MEDIA_PATHS[stateKey];
             if (!media) return;
 
-            // 動画パスが変わらない場合は再読み込みせずループ継続
+            const imgElem = document.getElementById("bg-img");
+            const videoElem = document.getElementById("bg-video");
+
+            // 静止画は常にセットして描画を維持
+            if (media.poster) {
+                imgElem.src = media.poster;
+            }
+
+            // 同一動画の場合は切り替えない
             if (currentMediaVideo === media.video && media.video !== "") {
                 return;
             }
             currentMediaVideo = media.video;
-
-            const imgElem = document.getElementById("bg-img");
-            const videoElem = document.getElementById("bg-video");
-
-            // 静止画を設定（動画が再生できなくても黒画面にならないよう常時表示）
-            if (media.poster) {
-                imgElem.src = media.poster;
-                imgElem.classList.remove("hidden");
-            }
 
             if (media.video) {
                 videoElem.src = media.video;
@@ -193,14 +205,14 @@
                 const playPromise = videoElem.play();
                 if (playPromise !== undefined) {
                     playPromise.then(() => {
-                        videoElem.classList.remove("hidden");
-                    }).catch((err) => {
-                        console.warn("Video play failed, fallback to image:", err);
-                        videoElem.classList.add("hidden");
+                        videoElem.classList.add("active");
+                    }).catch(() => {
+                        // 自動再生ブロック時は静止画で維持（黒画面化を防止）
+                        videoElem.classList.remove("active");
                     });
                 }
             } else {
-                videoElem.classList.add("hidden");
+                videoElem.classList.remove("active");
             }
         }
 
@@ -235,12 +247,18 @@
             }
         }
 
-        // --- 物理ボタン2つ専用の入力制御 ---
+        // 入力時に動画再生を強制復帰させる処理を含めたイベントリスナー
         document.addEventListener("keydown", (e) => {
             if (e.code === "Space" || e.code === "Enter") {
                 e.preventDefault();
             } else {
                 return;
+            }
+
+            // 初回操作時に動画再生がブロックされていた場合は再試行
+            const videoElem = document.getElementById("bg-video");
+            if (videoElem.paused && currentMediaVideo) {
+                videoElem.play().then(() => videoElem.classList.add("active")).catch(() => {});
             }
 
             if (currentState === GAME_STATES.TITLE) {
@@ -295,7 +313,7 @@
     <!-- 背景メディア領域 -->
     <div class="bg-container">
         <img id="bg-img" class="bg-media" src="" alt="背景画像">
-        <video id="bg-video" class="bg-media hidden" autoplay loop muted playsinline></video>
+        <video id="bg-video" class="bg-media" autoplay loop muted playsinline></video>
     </div>
 
     <!-- ① タイトル画面UI -->
