@@ -21,7 +21,7 @@
             font-family: sans-serif;
             color: #fff;
             user-select: none;
-            cursor: none; /* マウスカーソルを非表示 */
+            cursor: none;
         }
 
         /* 背景メディアエリア */
@@ -105,7 +105,7 @@
             transition: transform 0.15s, background-color 0.15s, border-color 0.15s;
         }
 
-        /* フォーカス状態（Spaceキーで切り替え） */
+        /* 物理ボタンで選択中のスタイル（ホバー効果は廃止） */
         .select-card.selected {
             transform: scale(1.1);
             background: rgba(255, 255, 255, 0.25);
@@ -122,20 +122,17 @@
 
     <!-- 2. ゲームロジック・進行管理 (JavaScript) -->
     <script>
-        // --- A. フェーズ定義（状態管理） ---
         const GAME_STATES = {
-            TITLE: "TITLE",           // ① Title
-            GENRE: "GENRE",           // ② Genre
-            DIFFICULTY: "DIFFICULTY", // ③ Difficulty
-            PROGRESS: "PROGRESS",     // ④ 道中の進行
-            QUESTION: "QUESTION",     // ⑤ 出題画面 / ⑥ 回答
-            FALL: "FALL",             // ⑦-II 落下演出
-            GAMEOVER: "GAMEOVER",     // ⑧-II Gameover
-            CLEAR: "CLEAR"            // ⑧-I Clear
+            TITLE: "TITLE",
+            GENRE: "GENRE",
+            DIFFICULTY: "DIFFICULTY",
+            PROGRESS: "PROGRESS",
+            QUESTION: "QUESTION",
+            FALL: "FALL",
+            GAMEOVER: "GAMEOVER",
+            CLEAR: "CLEAR"
         };
 
-        // --- B. メディア一括管理 ---
-        // TITLE, GENRE, DIFFICULTY は同一背景を使用
         const MEDIA_PATHS = {
             [GAME_STATES.TITLE]:      { video: "media/bg-title.mp4", poster: "media/bg-title.PNG" },
             [GAME_STATES.GENRE]:      { video: "media/bg-title.mp4", poster: "media/bg-title.PNG" },
@@ -148,14 +145,12 @@
         };
 
         let currentState = GAME_STATES.TITLE;
-        let selectedIndex = 0; // 選択インデックス（0: 左 / 1: 右）
-        let currentMediaState = null; // 現在再生中の背景メディアキー
+        let selectedIndex = 0;
+        let currentMediaVideo = null;
 
-        // ゲーム選択結果保持用
         let selectedGenre = "";
         let selectedDifficulty = "";
 
-        // --- C. パスワード認証 ---
         const TARGET_HASH = "5817ae4948371f9b6b7d94615c0704e6a13ba5a773938351ebd832d0fcdbdf2f";
 
         async function sha256(str) {
@@ -171,32 +166,36 @@
             initApp();
         }
 
-        // --- D. メディア呼び出し関数 ---
+        // --- メディア制御（背景黒化防止処理追加） ---
         function playMedia(stateKey) {
             const media = MEDIA_PATHS[stateKey];
             if (!media) return;
 
-            // 同じ背景メディアが指定されている場合は、途切れさせずループ継続
-            if (currentMediaState && MEDIA_PATHS[currentMediaState].video === media.video) {
+            // 動画パスが変わらない場合は再読み込みせずループ継続
+            if (currentMediaVideo === media.video && media.video !== "") {
                 return;
             }
-            currentMediaState = stateKey;
+            currentMediaVideo = media.video;
 
             const imgElem = document.getElementById("bg-img");
             const videoElem = document.getElementById("bg-video");
-            const sourceElem = document.getElementById("bg-source");
 
-            imgElem.src = media.poster;
+            // 静止画を設定（動画が再生できなくても黒画面にならないよう常時表示）
+            if (media.poster) {
+                imgElem.src = media.poster;
+                imgElem.classList.remove("hidden");
+            }
 
             if (media.video) {
-                sourceElem.src = media.video;
+                videoElem.src = media.video;
                 videoElem.load();
                 
                 const playPromise = videoElem.play();
                 if (playPromise !== undefined) {
                     playPromise.then(() => {
                         videoElem.classList.remove("hidden");
-                    }).catch(() => {
+                    }).catch((err) => {
+                        console.warn("Video play failed, fallback to image:", err);
                         videoElem.classList.add("hidden");
                     });
                 }
@@ -205,7 +204,6 @@
             }
         }
 
-        // --- E. フォーカス表示の更新 ---
         function updateCardFocus(containerId) {
             const container = document.getElementById(containerId);
             if (!container) return;
@@ -219,10 +217,9 @@
             });
         }
 
-        // --- F. 画面遷移処理 ---
         function changeState(newState) {
             currentState = newState;
-            selectedIndex = 0; // 画面切り替え時に選択を左に初期化
+            selectedIndex = 0;
 
             document.querySelectorAll(".ui-layer").forEach(elem => elem.classList.add("hidden"));
             playMedia(newState);
@@ -238,7 +235,7 @@
             }
         }
 
-        // --- G. キー操作処理（物理ボタン2つ専用） ---
+        // --- 物理ボタン2つ専用の入力制御 ---
         document.addEventListener("keydown", (e) => {
             if (e.code === "Space" || e.code === "Enter") {
                 e.preventDefault();
@@ -246,47 +243,35 @@
                 return;
             }
 
-            // 1. タイトル画面
             if (currentState === GAME_STATES.TITLE) {
                 if (e.code === "Enter" || e.code === "Space") {
                     changeState(GAME_STATES.GENRE);
                 }
-            }
-            // 2. ジャンル選択画面
-            else if (currentState === GAME_STATES.GENRE) {
+            } else if (currentState === GAME_STATES.GENRE) {
                 if (e.code === "Space") {
-                    // 選択枠移動（2択トグル）
                     selectedIndex = (selectedIndex === 0) ? 1 : 0;
                     updateCardFocus("genre-cards");
                 } else if (e.code === "Enter") {
-                    // 決定
                     selectedGenre = selectedIndex === 0 ? "ジャンル A" : "ジャンル B";
                     console.log("決定ジャンル:", selectedGenre);
                     changeState(GAME_STATES.DIFFICULTY);
                 }
-            }
-            // 3. 難易度選択画面
-            else if (currentState === GAME_STATES.DIFFICULTY) {
+            } else if (currentState === GAME_STATES.DIFFICULTY) {
                 if (e.code === "Space") {
-                    // 選択枠移動（2択トグル）
                     selectedIndex = (selectedIndex === 0) ? 1 : 0;
                     updateCardFocus("diff-cards");
                 } else if (e.code === "Enter") {
-                    // 決定
                     selectedDifficulty = selectedIndex === 0 ? "初級" : "上級";
                     console.log("決定難易度:", selectedDifficulty);
-                    // 次フェーズ（PROGRESS等）の実装時にここへ遷移を追加
                 }
             }
         });
 
-        // --- H. 初期化処理 ---
         function initApp() {
             playMedia(GAME_STATES.TITLE);
             window.focus();
         }
 
-        // 認証処理
         (async function checkAuth() {
             while (true) {
                 const userInput = prompt("Enter password:");
@@ -310,9 +295,7 @@
     <!-- 背景メディア領域 -->
     <div class="bg-container">
         <img id="bg-img" class="bg-media" src="" alt="背景画像">
-        <video id="bg-video" class="bg-media hidden" autoplay loop muted playsinline>
-            <source id="bg-source" src="" type="video/mp4">
-        </video>
+        <video id="bg-video" class="bg-media hidden" autoplay loop muted playsinline></video>
     </div>
 
     <!-- ① タイトル画面UI -->
