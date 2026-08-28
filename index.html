@@ -5,6 +5,7 @@
     <title>トロッコアドベンチャー</title>
 
     <style>
+        /* 画面全体の基本設定 */
         html, body {
             margin: 0;
             padding: 0;
@@ -14,11 +15,11 @@
             background-color: #000;
             font-family: sans-serif;
             color: #fff;
-            user-select: none;
-            cursor: none;
+            user-select: none; /* テキスト選択を防止 */
+            cursor: none;      /* マウスカーソルを非表示 */
         }
 
-        /* 背景エリア */
+        /* 背景メディア（画像・動画）配置コンテナ */
         .bg-container {
             position: fixed;
             top: 0;
@@ -34,14 +35,16 @@
             left: 0;
             width: 100%;
             height: 100%;
-            object-fit: cover;
+            object-fit: cover; /* 画面いっぱいにリサイズ */
         }
 
+        /* 静止画（ポスター画像）レイヤー */
         #bg-img {
             z-index: 1;
             display: block;
         }
 
+        /* 動画レイヤー（読み込み完了後に透過度を変更して表示） */
         #bg-video {
             z-index: 2;
             opacity: 0;
@@ -52,9 +55,10 @@
             opacity: 1;
         }
 
+        /* 画面表示切り替え用ユーティリティクラス */
         .hidden { display: none !important; }
 
-        /* 共通UIレイヤー */
+        /* 共通UIレイヤー（画面中央に要素を配置） */
         .ui-layer {
             position: relative;
             z-index: 10;
@@ -64,7 +68,7 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            text-shadow: 0 4px 10px rgba(0, 0, 0, 0.9);
+            text-shadow: 0 4px 15px rgba(0, 0, 0, 0.9); /* 投影時の視認性を上げる影効果 */
         }
 
         /* パスワード認証モーダル */
@@ -84,18 +88,22 @@
 
         .auth-box {
             background: #222;
-            padding: 2rem 3rem;
-            border-radius: 12px;
+            padding: 3rem 4rem;
+            border-radius: 16px;
             border: 2px solid #555;
             text-align: center;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.8);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+        }
+
+        .auth-box h2 {
+            font-size: 2.5rem;
+            margin: 0 0 1.5rem 0;
         }
 
         .auth-input {
-            font-size: 1.5rem;
-            padding: 0.5rem 1rem;
-            margin-top: 1rem;
-            border-radius: 6px;
+            font-size: 2rem;
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
             border: 1px solid #ccc;
             text-align: center;
             outline: none;
@@ -103,22 +111,24 @@
 
         .auth-error {
             color: #ff4d4d;
-            margin-top: 1rem;
-            font-size: 1rem;
+            margin-top: 1.5rem;
+            font-size: 1.5rem;
+            font-weight: bold;
         }
 
         /* タイトル画面UI */
         .title {
-            font-size: 3.5rem;
-            margin-bottom: 2rem;
+            font-size: 6rem; /* 投影用に拡大 */
+            margin-bottom: 3rem;
             letter-spacing: 0.1em;
         }
 
         .start-msg {
-            font-size: 1.5rem;
+            font-size: 2.2rem; /* 投影用に拡大 */
             animation: blink 1.5s infinite;
         }
 
+        /* 点滅アニメーション */
         @keyframes blink {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.2; }
@@ -126,45 +136,48 @@
 
         /* 選択画面共通UI */
         .section-title {
-            font-size: 2.5rem;
-            margin-bottom: 3rem;
+            font-size: 4.5rem; /* 投影用に拡大 */
+            margin-bottom: 4rem;
             letter-spacing: 0.05em;
         }
 
         .card-container {
             display: flex;
-            gap: 4rem;
+            gap: 5rem; /* カード間の余白を拡大 */
         }
 
+        /* 選択可能カード（投影向けサイズ変更） */
         .select-card {
-            width: 260px;
-            height: 260px;
+            width: 380px;  /* 260px -> 380px */
+            height: 380px; /* 260px -> 380px */
             background: rgba(0, 0, 0, 0.6);
-            border: 4px solid #fff;
-            border-radius: 16px;
+            border: 6px solid #fff;
+            border-radius: 24px;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 2rem;
+            font-size: 3.5rem; /* 2rem -> 3.5rem */
             font-weight: bold;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.8);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.8);
             transition: transform 0.15s, background-color 0.15s, border-color 0.15s;
         }
 
+        /* カード選択状態（フォーカス時） */
         .select-card.selected {
             transform: scale(1.1);
-            background: rgba(255, 255, 255, 0.25);
-            border-color: #ffd700;
+            background: rgba(255, 255, 255, 0.3);
+            border-color: #ffd700; /* ハイライト黄色 */
         }
 
         .key-guide {
-            margin-top: 3rem;
-            font-size: 1.1rem;
-            color: #ccc;
+            margin-top: 4rem;
+            font-size: 1.8rem; /* 投影用に拡大 */
+            color: #ddd;
         }
     </style>
 
     <script>
+        // ゲーム内の状態定義
         const GAME_STATES = {
             TITLE: "TITLE",
             GENRE: "GENRE",
@@ -176,6 +189,7 @@
             CLEAR: "CLEAR"
         };
 
+        // 各状態における背景メディア（動画・静止画）のパス設定
         const MEDIA_PATHS = {
             [GAME_STATES.TITLE]:      { video: "media/bg-title.mp4", poster: "media/bg-title.PNG" },
             [GAME_STATES.GENRE]:      { video: "media/bg-title.mp4", poster: "media/bg-title.PNG" },
@@ -187,16 +201,24 @@
             [GAME_STATES.CLEAR]:      { video: "media/bg-clear.mp4", poster: "media/bg-clear.JPG" }
         };
 
-        let currentState = GAME_STATES.TITLE;
-        let selectedIndex = 0;
-        let currentMediaVideo = null;
-        let isAuthenticated = false;
+        // システム管理変数
+        let currentState = GAME_STATES.TITLE; // 現在のゲーム状態
+        let selectedIndex = 0;               // 選択カードのインデックス（0:左, 1:右）
+        let currentMediaVideo = null;        // 現在再生中の動画パス
+        let isAuthenticated = false;         // パスワード認証済みフラグ
 
+        // プレイヤーの選択データ保存用
         let selectedGenre = "";
         let selectedDifficulty = "";
 
+        // パスワード検証用のSHA-256ハッシュ値
         const TARGET_HASH = "5817ae4948371f9b6b7d94615c0704e6a13ba5a773938351ebd832d0fcdbdf2f";
 
+        /**
+         * 文字列のSHA-256ハッシュ値を計算する関数
+         * @param {string} str - 入力文字列
+         * @returns {Promise<string>} ハッシュ値（16進数文字列）
+         */
         async function sha256(str) {
             const buff = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
             return Array.from(new Uint8Array(buff))
@@ -204,6 +226,10 @@
                 .join("");
         }
 
+        /**
+         * 指定された状態に応じた背景メディア（静止画/動画）を再生・切替する関数
+         * @param {string} stateKey - GAME_STATES のキー
+         */
         function playMedia(stateKey) {
             const media = MEDIA_PATHS[stateKey];
             if (!media) return;
@@ -211,15 +237,18 @@
             const imgElem = document.getElementById("bg-img");
             const videoElem = document.getElementById("bg-video");
 
+            // ポスター（静止画）の設定
             if (media.poster) {
                 imgElem.src = media.poster;
             }
 
+            // 同一動画の再生要求であれば重複読み込みを行わない
             if (currentMediaVideo === media.video && media.video !== "") {
                 return;
             }
             currentMediaVideo = media.video;
 
+            // 動画要素の読み込みと再生処理
             if (media.video) {
                 videoElem.src = media.video;
                 videoElem.load();
@@ -227,8 +256,10 @@
                 const playPromise = videoElem.play();
                 if (playPromise !== undefined) {
                     playPromise.then(() => {
+                        // 再生開始に成功したら動画レイヤーを表示
                         videoElem.classList.add("active");
                     }).catch(() => {
+                        // 自動再生に失敗した場合は静止画を表示状態に維持
                         videoElem.classList.remove("active");
                     });
                 }
@@ -237,6 +268,10 @@
             }
         }
 
+        /**
+         * 選択カードの見た目（フォーカス枠）を更新する関数
+         * @param {string} containerId - 対象コンテナのID
+         */
         function updateCardFocus(containerId) {
             const container = document.getElementById(containerId);
             if (!container) return;
@@ -250,13 +285,21 @@
             });
         }
 
+        /**
+         * ゲーム画面の状態を遷移し、表示UIおよび背景を切り替える関数
+         * @param {string} newState - GAME_STATES の切り替え先状態
+         */
         function changeState(newState) {
             currentState = newState;
-            selectedIndex = 0;
+            selectedIndex = 0; // カーソル位置を左（0）にリセット
 
+            // すべてのUIレイヤーを一旦非表示にする
             document.querySelectorAll(".ui-layer").forEach(elem => elem.classList.add("hidden"));
+            
+            // 背景メディアを変更
             playMedia(newState);
 
+            // 指定された状態のUIレイヤーのみを表示する
             if (newState === GAME_STATES.TITLE) {
                 document.getElementById("ui-title").classList.remove("hidden");
             } else if (newState === GAME_STATES.GENRE) {
@@ -268,34 +311,44 @@
             }
         }
 
-        // キー操作リスナー
+        // 全般的なキー操作リスナー（ゲーム操作制御）
         document.addEventListener("keydown", (e) => {
+            // パスワード未認証状態の時はキー操作を受け付けない
             if (!isAuthenticated) return;
 
+            // SpaceキーでのスクロールやEnterキーの既定動作を防止
             if (e.code === "Space" || e.code === "Enter") {
                 e.preventDefault();
             } else {
                 return;
             }
 
+            // ブラウザの制限等で動画が一時停止している場合、キー入力で再生を再試行
             const videoElem = document.getElementById("bg-video");
             if (videoElem.paused && currentMediaVideo) {
                 videoElem.play().then(() => videoElem.classList.add("active")).catch(() => {});
             }
 
+            // 【タイトル画面】における操作
             if (currentState === GAME_STATES.TITLE) {
                 if (e.code === "Enter" || e.code === "Space") {
                     changeState(GAME_STATES.GENRE);
                 }
-            } else if (currentState === GAME_STATES.GENRE) {
+            } 
+            // 【ジャンル選択画面】における操作
+            else if (currentState === GAME_STATES.GENRE) {
                 if (e.code === "Space") {
+                    // Spaceキーで選択枠を移動（トグル切替）
                     selectedIndex = (selectedIndex === 0) ? 1 : 0;
                     updateCardFocus("genre-cards");
                 } else if (e.code === "Enter") {
+                    // Enterキーで決定し、難易度選択画面へ遷移
                     selectedGenre = selectedIndex === 0 ? "ジャンル A" : "ジャンル B";
                     changeState(GAME_STATES.DIFFICULTY);
                 }
-            } else if (currentState === GAME_STATES.DIFFICULTY) {
+            } 
+            // 【難易度選択画面】における操作
+            else if (currentState === GAME_STATES.DIFFICULTY) {
                 if (e.code === "Space") {
                     selectedIndex = (selectedIndex === 0) ? 1 : 0;
                     updateCardFocus("diff-cards");
@@ -305,38 +358,46 @@
             }
         });
 
-        // 認証処理（イベントバブリングの防止）
+        /**
+         * パスワード認証入力時の処理関数
+         * @param {KeyboardEvent} e - キーボードイベント
+         */
         async function handleAuthSubmit(e) {
             if (e.key === "Enter") {
                 e.preventDefault();
-                e.stopPropagation(); // document側イベントへの波及を止める
+                e.stopPropagation(); // イベントバブリングを防止（認証と同時に画面遷移することを防ぐ）
 
                 const inputVal = e.target.value;
                 const hash = await sha256(inputVal);
+
                 if (hash === TARGET_HASH) {
+                    // 認証成功時：モーダルを閉じ、タイトル画面へ遷移
                     document.getElementById("auth-modal").classList.add("hidden");
                     changeState(GAME_STATES.TITLE);
 
-                    // 入力完了のEnterキーで即時状態変化が起きないよう一瞬遅延してフラグ更新
+                    // 入力時のEnterキー押下検知が直後のゲームキー操作とバッティングしないよう微小遅延を挟む
                     setTimeout(() => {
                         isAuthenticated = true;
                     }, 50);
                 } else {
+                    // 認証失敗時：エラーメッセージの表示とフォームリセット
                     document.getElementById("auth-error").textContent = "パスワードが正しくありません";
                     e.target.value = "";
                 }
             }
         }
 
+        // DOM構築完了時の初期化処理
         window.addEventListener("DOMContentLoaded", () => {
             playMedia(GAME_STATES.TITLE);
             const passInput = document.getElementById("pass-input");
-            if (passInput) passInput.focus();
+            if (passInput) passInput.focus(); // パスワード入力フィールドに即座にフォーカスを当てる
         });
     </script>
 </head>
 <body>
 
+    <!-- パスワード認証モーダル画面 -->
     <div id="auth-modal">
         <div class="auth-box">
             <h2>認証が必要です</h2>
@@ -345,16 +406,19 @@
         </div>
     </div>
 
+    <!-- 背景描画コンテナ -->
     <div class="bg-container">
         <img id="bg-img" class="bg-media" src="" alt="背景画像">
         <video id="bg-video" class="bg-media" autoplay loop muted playsinline></video>
     </div>
 
+    <!-- タイトル画面 UI -->
     <div id="ui-title" class="ui-layer hidden">
         <h1 class="title">Title!!</h1>
         <p class="start-msg">PRESS ENTER TO START</p>
     </div>
 
+    <!-- ジャンル選択画面 UI -->
     <div id="ui-genre" class="ui-layer hidden">
         <h2 class="section-title">SELECT GENRE</h2>
         <div id="genre-cards" class="card-container">
@@ -364,6 +428,7 @@
         <p class="key-guide">[ SPACE ]: 選択移動 / [ ENTER ]: 決定</p>
     </div>
 
+    <!-- 難易度選択画面 UI -->
     <div id="ui-difficulty" class="ui-layer hidden">
         <h2 class="section-title">SELECT DIFFICULTY</h2>
         <div id="diff-cards" class="card-container">
