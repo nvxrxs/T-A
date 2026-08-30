@@ -284,7 +284,6 @@
             CLEAR: "CLEAR"
         };
 
-        <!--メディア管理-->
         const MEDIA_PATHS = {
             [GAME_STATES.TITLE]:      { video: "media/bg-title.mp4", poster: "media/bg-title.jpg", loop: true },
             [GAME_STATES.GENRE]:      { video: "media/bg-title.mp4", poster: "media/bg-title.jpg", loop: true },
@@ -366,7 +365,7 @@
                 if (cols.length >= 7) {
                     questionDatabase.push({
                         genre: cols[0],
-                        difficulty: cols[1],
+                        difficulty: cols[1].toUpperCase(),
                         step: parseInt(cols[2], 10),
                         question: cols[3],
                         optionA: cols[4],
@@ -440,7 +439,6 @@
         }
 
         function loadQuizData() {
-            // 条件に一致する問題をすべて抽出
             const matchingQuestions = questionDatabase.filter(q => 
                 q.genre === selectedGenre && 
                 q.difficulty === selectedDifficulty && 
@@ -448,7 +446,6 @@
             );
 
             if (matchingQuestions.length > 0) {
-                // 一致する問題の中からランダムで1つ選択
                 const randomIndex = Math.floor(Math.random() * matchingQuestions.length);
                 currentQuestion = matchingQuestions[randomIndex];
 
@@ -518,7 +515,6 @@
                 return;
             }
 
-            // デバッグ用: PROGRESS画面でNキーを押した際にスキップ
             if (e.code === "KeyN" || e.key === "n" || e.key === "N") {
                 if (currentState.startsWith("PROGRESS_")) {
                     e.preventDefault();
@@ -559,7 +555,7 @@
                     selectedIndex = (selectedIndex === 0) ? 1 : 0;
                     updateCardFocus("diff-cards");
                 } else if (e.code === "Enter") {
-                    selectedDifficulty = selectedIndex === 0 ? "初級" : "上級";
+                    selectedDifficulty = selectedIndex === 0 ? "E" : "H";
                     changeState(GAME_STATES.PROGRESS);
                 }
             }
