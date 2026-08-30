@@ -55,7 +55,7 @@
 
         .hidden { display: none !important; }
 
-        /* パスワード認証モーダル（固定pxサイズ） */
+        /* パスワード認証モーダル */
         #auth-modal {
             position: fixed;
             top: 0;
@@ -199,29 +199,109 @@
             font-weight: bold;
             color: #eee;
         }
+
+        /* クイズ画面UI */
+        .quiz-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5vh 5vw;
+            box-sizing: border-box;
+        }
+
+        .quiz-question-box {
+            background: rgba(0, 0, 0, 0.75);
+            border: 0.5vh solid #fff;
+            border-radius: 2vh;
+            width: 80vw;
+            padding: 3vh;
+            text-align: center;
+            font-size: 5vh;
+            font-weight: bold;
+            line-height: 1.4;
+            box-shadow: 0 1vh 2vh rgba(0, 0, 0, 0.8);
+        }
+
+        .quiz-options-container {
+            display: flex;
+            justify-content: space-between;
+            width: 85vw;
+            margin-bottom: 5vh;
+        }
+
+        .quiz-option-card {
+            width: 38vw;
+            min-height: 25vh;
+            background: rgba(0, 0, 0, 0.75);
+            border: 0.6vh solid #aaa;
+            border-radius: 2vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2vh;
+            box-sizing: border-box;
+        }
+
+        .option-label {
+            font-size: 4vh;
+            color: #ffd700;
+            font-weight: bold;
+            margin-bottom: 1vh;
+        }
+
+        .option-text {
+            font-size: 4.5vh;
+            font-weight: bold;
+            text-align: center;
+        }
     </style>
 
     <script>
+        const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQbRsUm7p9ttAa6NSNEM-YIRj9Ah7iv4izikbgCemvecrlIMGMl4H80D3wljAFeFHAdFxAoySIBJCkb/pub?gid=0&single=true&output=csv";
+
         const GAME_STATES = {
             TITLE: "TITLE",
             GENRE: "GENRE",
             DIFFICULTY: "DIFFICULTY",
             PROGRESS: "PROGRESS",
+            PROGRESS_0: "PROGRESS_0",
+            PROGRESS_1: "PROGRESS_1",
+            PROGRESS_2: "PROGRESS_2",
+            PROGRESS_3: "PROGRESS_3",
+            PROGRESS_4: "PROGRESS_4",
             QUESTION: "QUESTION",
+            QUESTION_0: "QUESTION_0",
+            QUESTION_1: "QUESTION_1",
+            QUESTION_2: "QUESTION_2",
+            QUESTION_3: "QUESTION_3",
+            QUESTION_4: "QUESTION_4",
             FALL: "FALL",
             GAMEOVER: "GAMEOVER",
             CLEAR: "CLEAR"
         };
 
+        <!--メディア管理-->
         const MEDIA_PATHS = {
-            [GAME_STATES.TITLE]:      { video: "media/bg-title.mp4", poster: "media/bg-title.jpg" },
-            [GAME_STATES.GENRE]:      { video: "media/bg-title.mp4", poster: "media/bg-title.jpg" },
-            [GAME_STATES.DIFFICULTY]: { video: "media/bg-title.mp4", poster: "media/bg-title.jpg" },
-            [GAME_STATES.PROGRESS]:   { video: "media/bg-progress.mp4", poster: "media/bg-progress.jpg" },
-            [GAME_STATES.QUESTION]:   { video: "media/bg-quiz.mp4", poster: "media/bg-quiz.JPG" },
-            [GAME_STATES.FALL]:       { video: "media/bg-fall.mp4", poster: "media/bg-fall.JPG" },
-            [GAME_STATES.GAMEOVER]:   { video: "media/bg-gameover.mp4", poster: "media/bg-gameover.JPG" },
-            [GAME_STATES.CLEAR]:      { video: "media/bg-clear.mp4", poster: "media/bg-clear.JPG" }
+            [GAME_STATES.TITLE]:      { video: "media/bg-title.mp4", poster: "media/bg-title.jpg", loop: true },
+            [GAME_STATES.GENRE]:      { video: "media/bg-title.mp4", poster: "media/bg-title.jpg", loop: true },
+            [GAME_STATES.DIFFICULTY]: { video: "media/bg-title.mp4", poster: "media/bg-title.jpg", loop: true },
+            [GAME_STATES.PROGRESS_0]: { video: "media/bg-progress0.mp4", poster: "media/bg-progress0.jpg", loop: false },
+            [GAME_STATES.PROGRESS_1]: { video: "media/bg-progress1.mp4", poster: "media/bg-progress1.jpg", loop: false },
+            [GAME_STATES.PROGRESS_2]: { video: "media/bg-progress2.mp4", poster: "media/bg-progress2.jpg", loop: false },
+            [GAME_STATES.PROGRESS_3]: { video: "media/bg-progress3.mp4", poster: "media/bg-progress3.jpg", loop: false },
+            [GAME_STATES.PROGRESS_4]: { video: "media/bg-progress4.mp4", poster: "media/bg-progress4.jpg", loop: false },
+            [GAME_STATES.QUESTION_0]: { video: "media/bg-quiz0.mp4", poster: "media/bg-quiz0.JPG", loop: true },
+            [GAME_STATES.QUESTION_1]: { video: "media/bg-quiz1.mp4", poster: "media/bg-quiz1.JPG", loop: true },
+            [GAME_STATES.QUESTION_2]: { video: "media/bg-quiz2.mp4", poster: "media/bg-quiz2.JPG", loop: true },
+            [GAME_STATES.QUESTION_3]: { video: "media/bg-quiz3.mp4", poster: "media/bg-quiz3.JPG", loop: true },
+            [GAME_STATES.QUESTION_4]: { video: "media/bg-quiz4.mp4", poster: "media/bg-quiz4.JPG", loop: true },
+            [GAME_STATES.FALL]:       { video: "media/bg-fall.mp4", poster: "media/bg-fall.JPG", loop: false },
+            [GAME_STATES.GAMEOVER]:   { video: "media/bg-gameover.mp4", poster: "media/bg-gameover.JPG", loop: true },
+            [GAME_STATES.CLEAR]:      { video: "media/bg-clear.mp4", poster: "media/bg-clear.JPG", loop: true }
         };
 
         let currentState = GAME_STATES.TITLE;
@@ -231,12 +311,13 @@
 
         let selectedGenre = "";
         let selectedDifficulty = "";
+        let questionCount = 0;
+
+        let questionDatabase = [];
+        let currentQuestion = null;
 
         const TARGET_HASH = "5817ae4948371f9b6b7d94615c0704e6a13ba5a773938351ebd832d0fcdbdf2f";
 
-        /**
-         * 全画面表示の切り替え処理
-         */
         function toggleFullScreen() {
             if (!document.fullscreenElement && !document.mozFullScreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement) {
                 const elem = document.documentElement;
@@ -265,9 +346,37 @@
                 .join("");
         }
 
-        /**
-         * アセットの事前読み込み処理（ラグ軽減）
-         */
+        async function fetchQuestions() {
+            try {
+                const response = await fetch(CSV_URL);
+                const csvText = await response.text();
+                parseCSV(csvText);
+            } catch (error) {
+                console.error("問題データの取得に失敗しました:", error);
+            }
+        }
+
+        function parseCSV(text) {
+            const lines = text.trim().split("\n");
+            questionDatabase = [];
+
+            for (let i = 1; i < lines.length; i++) {
+                if (!lines[i].trim()) continue;
+                const cols = lines[i].split(",").map(col => col.trim().replace(/^"|"$/g, ''));
+                if (cols.length >= 7) {
+                    questionDatabase.push({
+                        genre: cols[0],
+                        difficulty: cols[1],
+                        step: parseInt(cols[2], 10),
+                        question: cols[3],
+                        optionA: cols[4],
+                        optionB: cols[5],
+                        answer: cols[6].toUpperCase()
+                    });
+                }
+            }
+        }
+
         function preloadMedia() {
             Object.values(MEDIA_PATHS).forEach(media => {
                 if (media.poster) {
@@ -293,6 +402,8 @@
             if (media.poster) {
                 imgElem.src = media.poster;
             }
+
+            videoElem.loop = media.loop !== false;
 
             if (currentMediaVideo === media.video && media.video !== "") {
                 return;
@@ -328,33 +439,93 @@
             });
         }
 
+        function loadQuizData() {
+            // 条件に一致する問題をすべて抽出
+            const matchingQuestions = questionDatabase.filter(q => 
+                q.genre === selectedGenre && 
+                q.difficulty === selectedDifficulty && 
+                q.step === questionCount
+            );
+
+            if (matchingQuestions.length > 0) {
+                // 一致する問題の中からランダムで1つ選択
+                const randomIndex = Math.floor(Math.random() * matchingQuestions.length);
+                currentQuestion = matchingQuestions[randomIndex];
+
+                document.getElementById("quiz-text").textContent = currentQuestion.question;
+                document.getElementById("opt-a-text").textContent = currentQuestion.optionA;
+                document.getElementById("opt-b-text").textContent = currentQuestion.optionB;
+            } else {
+                currentQuestion = null;
+                document.getElementById("quiz-text").textContent = "問題が見つかりません";
+                document.getElementById("opt-a-text").textContent = "---";
+                document.getElementById("opt-b-text").textContent = "---";
+            }
+        }
+
         function changeState(newState) {
-            currentState = newState;
+            let targetState = newState;
+
+            if (newState === GAME_STATES.PROGRESS) {
+                const step = Math.min(Math.max(questionCount, 0), 4);
+                targetState = GAME_STATES[`PROGRESS_${step}`];
+            } else if (newState === GAME_STATES.QUESTION) {
+                const step = Math.min(Math.max(questionCount, 0), 4);
+                targetState = GAME_STATES[`QUESTION_${step}`];
+            }
+
+            currentState = targetState;
             selectedIndex = 0;
 
             document.querySelectorAll(".ui-layer").forEach(elem => elem.classList.add("hidden"));
             
-            playMedia(newState);
+            playMedia(targetState);
 
-            if (newState === GAME_STATES.TITLE) {
+            if (targetState === GAME_STATES.TITLE) {
                 document.getElementById("ui-title").classList.remove("hidden");
-            } else if (newState === GAME_STATES.GENRE) {
+            } else if (targetState === GAME_STATES.GENRE) {
                 document.getElementById("ui-genre").classList.remove("hidden");
                 updateCardFocus("genre-cards");
-            } else if (newState === GAME_STATES.DIFFICULTY) {
+            } else if (targetState === GAME_STATES.DIFFICULTY) {
                 document.getElementById("ui-difficulty").classList.remove("hidden");
                 updateCardFocus("diff-cards");
+            } else if (targetState.startsWith("QUESTION_")) {
+                loadQuizData();
+                document.getElementById("ui-question").classList.remove("hidden");
+            }
+        }
+
+        function handleAnswerSubmit(userChoice) {
+            if (!currentQuestion) return;
+
+            if (userChoice === currentQuestion.answer) {
+                if (questionCount >= 4) {
+                    changeState(GAME_STATES.CLEAR);
+                } else {
+                    changeState(GAME_STATES.PROGRESS);
+                }
+            } else {
+                changeState(GAME_STATES.FALL);
             }
         }
 
         document.addEventListener("keydown", (e) => {
             if (!isAuthenticated) return;
 
-            // Fキー押下時の全画面切替
             if (e.code === "KeyF" || e.key === "f" || e.key === "F") {
                 e.preventDefault();
                 toggleFullScreen();
                 return;
+            }
+
+            // デバッグ用: PROGRESS画面でNキーを押した際にスキップ
+            if (e.code === "KeyN" || e.key === "n" || e.key === "N") {
+                if (currentState.startsWith("PROGRESS_")) {
+                    e.preventDefault();
+                    questionCount++;
+                    changeState(GAME_STATES.QUESTION);
+                    return;
+                }
             }
 
             if (e.code === "Space" || e.code === "Enter") {
@@ -370,6 +541,7 @@
 
             if (currentState === GAME_STATES.TITLE) {
                 if (e.code === "Enter" || e.code === "Space") {
+                    questionCount = 0;
                     changeState(GAME_STATES.GENRE);
                 }
             } 
@@ -389,6 +561,13 @@
                 } else if (e.code === "Enter") {
                     selectedDifficulty = selectedIndex === 0 ? "初級" : "上級";
                     changeState(GAME_STATES.PROGRESS);
+                }
+            }
+            else if (currentState.startsWith("QUESTION_")) {
+                if (e.code === "Space") {
+                    handleAnswerSubmit("A");
+                } else if (e.code === "Enter") {
+                    handleAnswerSubmit("B");
                 }
             }
         });
@@ -417,7 +596,16 @@
 
         window.addEventListener("DOMContentLoaded", () => {
             preloadMedia();
+            fetchQuestions();
             playMedia(GAME_STATES.TITLE);
+
+            const videoElem = document.getElementById("bg-video");
+            videoElem.addEventListener("ended", () => {
+                if (currentState.startsWith("PROGRESS_")) {
+                    changeState(GAME_STATES.QUESTION);
+                }
+            });
+
             const passInput = document.getElementById("pass-input");
             if (passInput) passInput.focus();
         });
@@ -437,7 +625,7 @@
     <!-- 背景描画コンテナ -->
     <div class="bg-container">
         <img id="bg-img" class="bg-media" src="" alt="背景画像">
-        <video id="bg-video" class="bg-media" autoplay loop muted playsinline></video>
+        <video id="bg-video" class="bg-media" autoplay muted playsinline></video>
     </div>
 
     <!-- タイトル画面 UI -->
@@ -465,6 +653,25 @@
             <div class="select-card">HARD</div>
         </div>
         <p class="key-guide">[ SPACE ]: 選択移動 / [ ENTER ]: 決定</p>
+    </div>
+
+    <!-- 問題表示画面 UI -->
+    <div id="ui-question" class="ui-layer hidden">
+        <div class="quiz-container">
+            <div class="quiz-question-box">
+                <span id="quiz-text">問題文を取得中...</span>
+            </div>
+            <div id="quiz-options" class="quiz-options-container">
+                <div class="quiz-option-card">
+                    <span class="option-label">A [ SPACE ]</span>
+                    <span id="opt-a-text" class="option-text">選択肢 A</span>
+                </div>
+                <div class="quiz-option-card">
+                    <span class="option-label">B [ ENTER ]</span>
+                    <span id="opt-b-text" class="option-text">選択肢 B</span>
+                </div>
+            </div>
+        </div>
     </div>
 
 </body>
