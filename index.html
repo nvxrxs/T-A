@@ -715,16 +715,19 @@
             if (e.code === "KeyN" || e.key === "n" || e.key === "N") {
                 if (currentState.startsWith("PROGRESS_")) {
                     e.preventDefault();
-                    // PROGRESS_4（全問正解時の最終演出）のときはNキーで問題に遷移させない
-                    if (currentState === GAME_STATES.PROGRESS_4) return;
 
                     // 再生中の動画を強制停止
                     const videoElem = document.getElementById("bg-video");
                     videoElem.pause();
 
-                    // 問題カウントを進めてクイズ画面に遷移
-                    questionCount++;
-                    changeState(GAME_STATES.QUESTION);
+                    if (currentState === GAME_STATES.PROGRESS_4) {
+                        // PROGRESS_4 のときはNキーで即座にCLEARへ移行
+                        changeState(GAME_STATES.CLEAR);
+                    } else {
+                        // 問題カウントを進めてクイズ画面に遷移
+                        questionCount++;
+                        changeState(GAME_STATES.QUESTION);
+                    }
                     return;
                 }
             }
