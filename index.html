@@ -223,6 +223,23 @@
             font-weight: bold;
             line-height: 1.4;
             box-shadow: 0 1vh 2vh rgba(0, 0, 0, 0.8);
+            opacity: 0;
+        }
+
+        /* 奥から手前に拡大表示するアニメーション */
+        .quiz-question-box.animate-pop {
+            animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        @keyframes popIn {
+            0% {
+                opacity: 0;
+                transform: scale(0.2);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
         }
 
         .quiz-options-container {
@@ -230,6 +247,23 @@
             justify-content: space-between;
             width: 85vw;
             margin-bottom: 5vh;
+            opacity: 0;
+        }
+
+        /* フェードイン表示アニメーション */
+        .quiz-options-container.animate-fade {
+            animation: fadeInUp 0.5s ease-out forwards;
+        }
+
+        @keyframes fadeInUp {
+            0% {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .quiz-option-card {
@@ -319,6 +353,7 @@
         let selectedIndex = 0;
         let currentMediaVideo = null;
         let isAuthenticated = false;
+        let isAnimating = false; // アニメーション中のキー入力ロック用フラグ
 
         let selectedGenre = "";
         let selectedDifficulty = "";
@@ -487,6 +522,32 @@
             }
         }
 
+        function triggerQuizSequence() {
+            const qBox = document.querySelector(".quiz-question-box");
+            const optsContainer = document.querySelector(".quiz-options-container");
+
+            // アニメーション用クラスのリセット
+            qBox.classList.remove("animate-pop");
+            optsContainer.classList.remove("animate-fade");
+
+            isAnimating = true; // キー入力をロック
+
+            // 1. 問題文枠が奥から広がる (0.6秒)
+            setTimeout(() => {
+                qBox.classList.add("animate-pop");
+            }, 50);
+
+            // 2. 問題枠表示後、選択肢が下からフェードイン (さらに0.6秒後)
+            setTimeout(() => {
+                optsContainer.classList.add("animate-fade");
+            }, 650);
+
+            // 3. すべての表示演出が完了したらキー入力を解除 (全工程1.2秒)
+            setTimeout(() => {
+                isAnimating = false;
+            }, 1200);
+        }
+
         function changeState(newState) {
             let targetState = newState;
 
@@ -516,6 +577,7 @@
             } else if (targetState.startsWith("QUESTION_")) {
                 loadQuizData();
                 document.getElementById("ui-question").classList.remove("hidden");
+                triggerQuizSequence();
             }
         }
 
@@ -539,6 +601,11 @@
             if (e.code === "KeyF" || e.key === "f" || e.key === "F") {
                 e.preventDefault();
                 toggleFullScreen();
+                return;
+            }
+
+            // 演出アニメーション中はEnter/Spaceなどの入力を無視する
+            if (isAnimating) {
                 return;
             }
 
