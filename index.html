@@ -445,7 +445,6 @@
             const imgElem = document.getElementById("bg-img");
             const videoElem = document.getElementById("bg-video");
 
-            // 画像の制御（統一）
             if (media.poster) {
                 imgElem.src = media.poster;
                 imgElem.style.display = "block";
@@ -454,7 +453,6 @@
                 imgElem.style.display = "none";
             }
 
-            // 動画の制御
             videoElem.loop = media.loop !== false;
 
             if (media.video) {
@@ -594,11 +592,7 @@
             if (!currentQuestion) return;
 
             if (userChoice === currentQuestion.answer) {
-                if (questionCount >= 4) {
-                    changeState(GAME_STATES.CLEAR);
-                } else {
-                    changeState(GAME_STATES.PROGRESS);
-                }
+                changeState(GAME_STATES.PROGRESS);
             } else {
                 changeState(GAME_STATES.FALL);
             }
@@ -620,6 +614,11 @@
             if (e.code === "KeyN" || e.key === "n" || e.key === "N") {
                 if (currentState.startsWith("PROGRESS_")) {
                     e.preventDefault();
+                    if (currentState === GAME_STATES.PROGRESS_4) return;
+
+                    const videoElem = document.getElementById("bg-video");
+                    videoElem.pause();
+
                     questionCount++;
                     changeState(GAME_STATES.QUESTION);
                     return;
@@ -697,7 +696,12 @@
             const videoElem = document.getElementById("bg-video");
             videoElem.addEventListener("ended", () => {
                 if (currentState.startsWith("PROGRESS_")) {
-                    changeState(GAME_STATES.QUESTION);
+                    if (currentState === GAME_STATES.PROGRESS_4) {
+                        changeState(GAME_STATES.CLEAR);
+                    } else {
+                        questionCount++;
+                        changeState(GAME_STATES.QUESTION);
+                    }
                 }
             });
 
@@ -710,7 +714,7 @@
 
     <div id="auth-modal">
         <div class="auth-box">
-            <h2>Enter Password</h2>
+            <h2>認証が必要です</h2>
             <input type="password" id="pass-input" class="auth-input" placeholder="パスワードを入力" onkeydown="handleAuthSubmit(event)">
             <div id="auth-error" class="auth-error"></div>
         </div>
