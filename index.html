@@ -458,17 +458,27 @@
 
             if (media.video) {
                 videoElem.src = media.video;
-                
+
+                videoElem.onerror = () => {
+                    videoElem.classList.remove("active");
+                    videoElem.removeAttribute("src");
+                    videoElem.load();
+                };
+
                 const playPromise = videoElem.play();
                 if (playPromise !== undefined) {
                     playPromise.then(() => {
                         videoElem.classList.add("active");
                     }).catch(() => {
                         videoElem.classList.remove("active");
+                        videoElem.removeAttribute("src");
+                        videoElem.load();
                     });
                 }
             } else {
                 videoElem.classList.remove("active");
+                videoElem.removeAttribute("src");
+                videoElem.load();
             }
         }
 
@@ -701,7 +711,6 @@
 </head>
 <body>
 
-    <!-- パスワード認証モーダル画面 -->
     <div id="auth-modal">
         <div class="auth-box">
             <h2>認証が必要です</h2>
@@ -710,20 +719,17 @@
         </div>
     </div>
 
-    <!-- 背景描画コンテナ -->
     <div class="bg-container">
         <img id="bg-img" class="bg-media" src="" alt="背景画像">
         <video id="bg-video" class="bg-media" autoplay muted playsinline></video>
     </div>
 
-    <!-- タイトル画面 UI -->
     <div id="ui-title" class="ui-layer hidden">
         <p class="fullscreen-guide">[ F ]: 全画面表示</p>
         <h1 class="title">Title!!</h1>
         <p class="start-msg">PRESS ENTER TO START</p>
     </div>
 
-    <!-- ジャンル選択画面 UI -->
     <div id="ui-genre" class="ui-layer hidden">
         <h2 class="section-title">SELECT GENRE</h2>
         <div id="genre-cards" class="card-container">
@@ -733,7 +739,6 @@
         <p class="key-guide">[ SPACE ]: 選択移動 / [ ENTER ]: 決定</p>
     </div>
 
-    <!-- 難易度選択画面 UI -->
     <div id="ui-difficulty" class="ui-layer hidden">
         <h2 class="section-title">SELECT DIFFICULTY</h2>
         <div id="diff-cards" class="card-container">
@@ -743,7 +748,6 @@
         <p class="key-guide">[ SPACE ]: 選択移動 / [ ENTER ]: 決定</p>
     </div>
 
-    <!-- 問題表示画面 UI -->
     <div id="ui-question" class="ui-layer hidden">
         <div class="quiz-container">
             <div class="quiz-question-box">
