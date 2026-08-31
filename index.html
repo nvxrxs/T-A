@@ -331,6 +331,7 @@
             PROGRESS_2: "PROGRESS_2",
             PROGRESS_3: "PROGRESS_3",
             PROGRESS_4: "PROGRESS_4",
+            PROGRESS_5: "PROGRESS_5",     // 第5問正解後の最終進行
             QUESTION: "QUESTION",         // クイズ出題状態（動的マッピング用）
             QUESTION_0: "QUESTION_0",
             QUESTION_1: "QUESTION_1",
@@ -343,15 +344,37 @@
         };
         
         // 各ステートにおける背景メディアの設定（動画URL・静止画URL・ループ有無）
+        // Progress 1〜5 は左右(L/R) × 正誤(correct/wrong) の4ファイルを配置できるように拡張プロパティを設定
         const MEDIA_PATHS = {
             [GAME_STATES.TITLE]:       { video: "media/bg-title.mp4", poster: "media/bg-title.jpg", loop: true },
             [GAME_STATES.GENRE]:       { video: "media/bg-title.mp4", poster: "media/bg-title.jpg", loop: true },
             [GAME_STATES.DIFFICULTY]:  { video: "media/bg-title.mp4", poster: "media/bg-title.jpg", loop: true },
             [GAME_STATES.PROGRESS_0]:  { video: "media/bg-progress0.mp4", poster: "media/bg-progress0.jpg", loop: false },
-            [GAME_STATES.PROGRESS_1]:  { video: "media/bg-progress1.mp4", poster: "media/bg-progress1.jpg", loop: false },
-            [GAME_STATES.PROGRESS_2]:  { video: "media/bg-progress2.mp4", poster: "media/bg-progress2.jpg", loop: false },
-            [GAME_STATES.PROGRESS_3]:  { video: "media/bg-progress3.mp4", poster: "media/bg-progress3.jpg", loop: false },
-            [GAME_STATES.PROGRESS_4]:  { video: "media/bg-progress4.mp4", poster: "media/bg-progress4.jpg", loop: false },
+            [GAME_STATES.PROGRESS_1]:  { 
+                video: "media/bg-progress1.mp4", poster: "media/bg-progress1.jpg", loop: false,
+                L_correct: "media/bg-progress1-L-correct.mp4", L_wrong: "media/bg-progress1-L-wrong.mp4",
+                R_correct: "media/bg-progress1-R-correct.mp4", R_wrong: "media/bg-progress1-R-wrong.mp4"
+            },
+            [GAME_STATES.PROGRESS_2]:  { 
+                video: "media/bg-progress2.mp4", poster: "media/bg-progress2.jpg", loop: false,
+                L_correct: "media/bg-progress2-L-correct.mp4", L_wrong: "media/bg-progress2-L-wrong.mp4",
+                R_correct: "media/bg-progress2-R-correct.mp4", R_wrong: "media/bg-progress2-R-wrong.mp4"
+            },
+            [GAME_STATES.PROGRESS_3]:  { 
+                video: "media/bg-progress3.mp4", poster: "media/bg-progress3.jpg", loop: false,
+                L_correct: "media/bg-progress3-L-correct.mp4", L_wrong: "media/bg-progress3-L-wrong.mp4",
+                R_correct: "media/bg-progress3-R-correct.mp4", R_wrong: "media/bg-progress3-R-wrong.mp4"
+            },
+            [GAME_STATES.PROGRESS_4]:  { 
+                video: "media/bg-progress4.mp4", poster: "media/bg-progress4.jpg", loop: false,
+                L_correct: "media/bg-progress4-L-correct.mp4", L_wrong: "media/bg-progress4-L-wrong.mp4",
+                R_correct: "media/bg-progress4-R-correct.mp4", R_wrong: "media/bg-progress4-R-wrong.mp4"
+            },
+            [GAME_STATES.PROGRESS_5]:  { 
+                video: "media/bg-progress5.mp4", poster: "media/bg-progress5.jpg", loop: false,
+                L_correct: "media/bg-progress5-L-correct.mp4", L_wrong: "media/bg-progress5-L-wrong.mp4",
+                R_correct: "media/bg-progress5-R-correct.mp4", R_wrong: "media/bg-progress5-R-wrong.mp4"
+            },
             [GAME_STATES.QUESTION_0]:  { video: "media/bg-quiz0.mp4", poster: "media/bg-quiz0.jpg", loop: true },
             [GAME_STATES.QUESTION_1]:  { video: "media/bg-quiz1.mp4", poster: "media/bg-quiz1.jpg", loop: true },
             [GAME_STATES.QUESTION_2]:  { video: "media/bg-quiz2.mp4", poster: "media/bg-quiz2.jpg", loop: true },
@@ -434,7 +457,6 @@
         function parseCSV(text) {
             const lines = text.trim().split("\n");
             questionDatabase = [];
-            // 1行目はヘッダーのため除外して処理
             for (let i = 1; i < lines.length; i++) {
                 if (!lines[i].trim()) continue;
                 const cols = lines[i].split(",").map(col => col.trim().replace(/^"|"$/g, ''));
@@ -480,7 +502,6 @@
             const imgElem = document.getElementById("bg-img");
             const videoElem = document.getElementById("bg-video");
 
-            // --- 背景画像の切り替え処理 ---
             if (media.poster) {
                 imgElem.src = media.poster;
                 imgElem.style.display = "block";
@@ -489,26 +510,22 @@
                 imgElem.style.display = "none";
             }
 
-            // --- 背景動画の切り替え処理 ---
             videoElem.loop = media.loop !== false;
             if (media.video) {
                 if (currentMediaVideo !== media.video) {
                     currentMediaVideo = media.video;
                     videoElem.src = media.video;
                     
-                    // 読み込みエラー時の処理（動画を非表示にし静止画を維持）
                     videoElem.onerror = () => {
                         videoElem.classList.remove("active");
                         currentMediaVideo = null;
                     };
 
-                    // 動画再生処理
                     const playPromise = videoElem.play();
                     if (playPromise !== undefined) {
                         playPromise.then(() => {
                             videoElem.classList.add("active");
                         }).catch(() => {
-                            // 自動再生制限やロード失敗時は動画を表示せず静止画を表示
                             videoElem.classList.remove("active");
                         });
                     }
@@ -539,12 +556,10 @@
             const selectedCard = cards[selectedIndex];
             const unselectedCard = cards[selectedIndex === 0 ? 1 : 0];
 
-            // 非選択カードをフェードアウト＆縮小
             unselectedCard.style.transition = "opacity 0.4s ease, transform 0.4s ease";
             unselectedCard.style.opacity = "0";
             unselectedCard.style.transform = "scale(0.8)";
 
-            // 選択カードの中央移動＆拡大計算
             const rect = selectedCard.getBoundingClientRect();
             const cardCenterX = rect.left + rect.width / 2;
             const cardCenterY = rect.top + rect.height / 2;
@@ -554,7 +569,6 @@
             const moveX = screenCenterX - cardCenterX;
             const moveY = screenCenterY - cardCenterY;
 
-            // アニメーション実行と同時に黄色枠・発光エフェクトを追加
             selectedCard.style.transition = "transform 0.5s cubic-bezier(0.25, 1, 0.5, 1), border-color 0.3s, background-color 0.3s, box-shadow 0.3s";
             selectedCard.style.transform = `translate(${moveX}px, ${moveY}px) scale(1.2)`;
             selectedCard.style.borderColor = "#ffd700";
@@ -562,7 +576,6 @@
             selectedCard.style.boxShadow = "0 0 3vh rgba(255, 215, 0, 0.8)";
             selectedCard.style.zIndex = "20";
 
-            // アニメーション終了＋静止時間（合計1.2秒）待機後にコールバック
             setTimeout(() => {
                 if(callback) callback();
             }, 1200);
@@ -591,14 +604,12 @@
             const imageExtensions = /\.(jpg|jpeg|png|gif|webp|svg)$/i;
             containerElem.innerHTML = "";
             if (imageExtensions.test(value)) {
-                // 画像ファイル名の場合は <img> タグを生成して埋め込み
                 const img = document.createElement("img");
                 img.src = `media/${value}`;
                 img.alt = "選択肢画像";
                 img.className = "option-img";
                 containerElem.appendChild(img);
             } else {
-                // 通常文字列の場合はテキストを埋め込み
                 containerElem.textContent = value;
             }
         }
@@ -607,7 +618,6 @@
          * 現在の進捗・ジャンル・難易度に合わせて問題データを抽出・読み込み
          */
         function loadQuizData() {
-            // スプレッドシートのステップ値（1〜5）に合わせて questionCount（0〜4）に +1 を加算して検索
             const currentStep = questionCount + 1;
             const matchingQuestions = questionDatabase.filter(q =>
                 q.genre === selectedGenre &&
@@ -616,7 +626,6 @@
             );
 
             if (matchingQuestions.length > 0) {
-                // 条件に合う問題の中からランダムで1問抽出
                 const randomIndex = Math.floor(Math.random() * matchingQuestions.length);
                 currentQuestion = matchingQuestions[randomIndex];
 
@@ -624,7 +633,6 @@
                 renderOptionContent(document.getElementById("opt-a-text"), currentQuestion.optionA);
                 renderOptionContent(document.getElementById("opt-b-text"), currentQuestion.optionB);
             } else {
-                // 問題データが存在しない場合のフォールバック処理
                 currentQuestion = null;
                 document.getElementById("quiz-text").textContent = "問題が見つかりません";
                 renderOptionContent(document.getElementById("opt-a-text"), "---");
@@ -639,23 +647,19 @@
             const qBox = document.querySelector(".quiz-question-box");
             const optsContainer = document.querySelector(".quiz-options-container");
 
-            // アニメーション用CSSクラスをリセット
             qBox.classList.remove("animate-pop");
             optsContainer.classList.remove("animate-fade");
 
-            isAnimating = true; // アニメーション中フラグON
+            isAnimating = true;
 
-            // 1. 問題文を表示
             setTimeout(() => {
                 qBox.classList.add("animate-pop");
             }, 50);
 
-            // 2. 選択肢を時間差で表示
             setTimeout(() => {
                 optsContainer.classList.add("animate-fade");
             }, 1550);
 
-            // 3. アニメーション完了・入力解放
             setTimeout(() => {
                 isAnimating = false;
             }, 2150);
@@ -665,14 +669,13 @@
          * ゲーム状態（ステート）の遷移管理メイン関数
          */
         function changeState(newState) {
-            // アニメーションで付与されたカードのスタイルをリセット
             resetCardStyles();
 
             let targetState = newState;
 
             // 進行状態・クイズ状態の場合はステップ数に応じてサブステートへ変換
             if (newState === GAME_STATES.PROGRESS) {
-                const step = Math.min(Math.max(questionCount, 0), 4);
+                const step = Math.min(Math.max(questionCount, 0), 5);
                 targetState = GAME_STATES[`PROGRESS_${step}`];
             } else if (newState === GAME_STATES.QUESTION) {
                 const step = Math.min(Math.max(questionCount, 0), 4);
@@ -681,13 +684,9 @@
 
             currentState = targetState;
 
-            // 全てのUI層を一旦非表示化
             document.querySelectorAll(".ui-layer").forEach(elem => elem.classList.add("hidden"));
-            
-            // 背景メディアを変更・再生
             playMedia(targetState);
 
-            // ステートに応じたUI層の表示切り替えと初期化
             if (targetState === GAME_STATES.TITLE) {
                 document.getElementById("ui-title").classList.remove("hidden");
             } else if (targetState === GAME_STATES.GENRE) {
@@ -713,7 +712,6 @@
         function handleAnswerSubmit(userChoice) {
             let isCorrect = false;
 
-            // スプレッドシートから問題文や正答が検出されない場合はテストプレイ用に無条件で正解とする
             if (!currentQuestion || !currentQuestion.answer) {
                 isCorrect = true;
             } else if (userChoice.toUpperCase() === currentQuestion.answer.toUpperCase()) {
@@ -721,16 +719,10 @@
             }
 
             if (isCorrect) {
-                if (questionCount >= 4) {
-                    // 全問正解の場合は直接クリアへ
-                    changeState(GAME_STATES.CLEAR);
-                } else {
-                    // 正解かつ次問題がある場合はカウントを進めて次の進行動画へ
-                    questionCount++;
-                    changeState(GAME_STATES.PROGRESS);
-                }
+                // 正解時はカウントを進めて対応する Progress（1〜5）へ移行
+                questionCount++;
+                changeState(GAME_STATES.PROGRESS);
             } else {
-                // 不正解時：落下・ゲームオーバー演出へ移行
                 changeState(GAME_STATES.FALL);
             }
         }
@@ -739,7 +731,6 @@
         // 5. イベントリスナー（キーボード入力制御）
         // ==========================================================================
         document.addEventListener("keydown", (e) => {
-            // パスワード認証前の場合は各種操作を無効化
             if (!isAuthenticated) return;
 
             // --- [ F ] キー: 全画面切り替え ---
@@ -749,7 +740,6 @@
                 return;
             }
 
-            // 問題出現アニメーション中は誤操作防止のため入力無視
             if (isAnimating) {
                 return;
             }
@@ -759,23 +749,26 @@
                 if (currentState.startsWith("PROGRESS_")) {
                     e.preventDefault();
 
-                    // 再生中の動画を強制停止
                     const videoElem = document.getElementById("bg-video");
                     videoElem.pause();
 
-                    changeState(GAME_STATES.QUESTION);
+                    if (currentState === GAME_STATES.PROGRESS_5) {
+                        // PROGRESS_5 終了時はクリア画面へ
+                        changeState(GAME_STATES.CLEAR);
+                    } else {
+                        // 通常進行動画終了時は現在の questionCount に対応する問題画面へ
+                        changeState(GAME_STATES.QUESTION);
+                    }
                     return;
                 }
             }
 
-            // デフォルトのブラウザショートカット挙動（スペースでのスクロール等）を防止
             if (e.code === "Space" || e.code === "Enter") {
                 e.preventDefault();
             } else {
                 return;
             }
 
-            // 動画再生がブラウザ制限で停止している場合の再開処理
             const videoElem = document.getElementById("bg-video");
             if (videoElem.paused && currentMediaVideo) {
                 videoElem.play().then(() => videoElem.classList.add("active")).catch(() => {});
@@ -811,14 +804,16 @@
                     animateSelection("diff-cards", ".select-card", 0, () => {
                         selectedDifficulty = "E";
                         isAnimating = false;
-                        changeState(GAME_STATES.PROGRESS);
+                        questionCount = 0;
+                        changeState(GAME_STATES.PROGRESS); // PROGRESS_0 へ遷移
                     });
                 } else if (e.code === "Enter") {
                     isAnimating = true;
                     animateSelection("diff-cards", ".select-card", 1, () => {
                         selectedDifficulty = "H";
                         isAnimating = false;
-                        changeState(GAME_STATES.PROGRESS);
+                        questionCount = 0;
+                        changeState(GAME_STATES.PROGRESS); // PROGRESS_0 へ遷移
                     });
                 }
             }
@@ -854,10 +849,8 @@
                 const inputVal = e.target.value;
                 const hash = await sha256(inputVal);
                 if (hash === TARGET_HASH) {
-                    // 認証成功時：モーダル破棄・ゲーム開始
                     document.getElementById("auth-modal").classList.add("hidden");
                     
-                    // 入力欄からフォーカスを外してIME変換候補の表示を抑制
                     if (document.activeElement) {
                         document.activeElement.blur();
                     }
@@ -865,7 +858,6 @@
                     isAuthenticated = true;
                     changeState(GAME_STATES.TITLE);
                 } else {
-                    // 認証失敗時：エラー表示
                     document.getElementById("auth-error").textContent = "パスワードが正しくありません";
                     e.target.value = "";
                 }
@@ -884,21 +876,24 @@
             const videoElem = document.getElementById("bg-video");
             videoElem.addEventListener("ended", () => {
                 if (currentState.startsWith("PROGRESS_")) {
-                    changeState(GAME_STATES.QUESTION);
+                    if (currentState === GAME_STATES.PROGRESS_5) {
+                        // 最終進行動画（PROGRESS_5）終了後はクリア画面へ移行
+                        changeState(GAME_STATES.CLEAR);
+                    } else {
+                        // PROGRESS_0〜4 終了後は対応する問題画面へ移行
+                        changeState(GAME_STATES.QUESTION);
+                    }
                 } else if (currentState === GAME_STATES.FALL) {
-                    // 落下動画終了後にゲームオーバー画面へ移行
                     changeState(GAME_STATES.GAMEOVER);
                 }
             });
 
-            // パスワード入力用フォーカスをセット
             const passInput = document.getElementById("pass-input");
             if (passInput) passInput.focus();
         });
     </script>
 </head>
 <body>
-    <!-- パスワード認証モーダル画面 -->
     <div id="auth-modal">
         <div class="auth-box">
             <h2>認証が必要です</h2>
@@ -907,20 +902,17 @@
         </div>
     </div>
 
-    <!-- 背景メディア描画領域 -->
     <div class="bg-container">
         <img id="bg-img" class="bg-media" src="" alt="背景画像">
         <video id="bg-video" class="bg-media" autoplay muted playsinline></video>
     </div>
 
-    <!-- UIレイヤー：タイトル画面 -->
     <div id="ui-title" class="ui-layer hidden">
         <p class="fullscreen-guide">[ F ]: 全画面表示</p>
         <h1 class="title">Title!!</h1>
         <p class="start-msg">PRESS ENTER TO START</p>
     </div>
 
-    <!-- UIレイヤー：ジャンル選択画面 -->
     <div id="ui-genre" class="ui-layer hidden">
         <h2 class="section-title">SELECT GENRE</h2>
         <div id="genre-cards" class="card-container">
@@ -930,7 +922,6 @@
         <p class="key-guide">[ SPACE ]: 左を選択 / [ ENTER ]: 右を選択</p>
     </div>
 
-    <!-- UIレイヤー：難易度選択画面 -->
     <div id="ui-difficulty" class="ui-layer hidden">
         <h2 class="section-title">SELECT DIFFICULTY</h2>
         <div id="diff-cards" class="card-container">
@@ -940,15 +931,12 @@
         <p class="key-guide">[ SPACE ]: 左を選択 / [ ENTER ]: 右を選択</p>
     </div>
 
-    <!-- UIレイヤー：クイズ問題・選択肢表示画面 -->
     <div id="ui-question" class="ui-layer hidden">
         <div class="quiz-container">
-            <!-- 問題文テキストボックス -->
             <div class="quiz-question-box">
                 <span id="quiz-text">問題文を取得中...</span>
             </div>
 
-            <!-- 選択肢ボックス（A/B） -->
             <div id="quiz-options" class="quiz-options-container">
                 <div class="quiz-option-card">
                     <span class="option-label">A [ SPACE ]</span>
@@ -962,17 +950,14 @@
         </div>
     </div>
 
-    <!-- UIレイヤー：落下画面 -->
     <div id="ui-fall" class="ui-layer hidden">
     </div>
 
-    <!-- UIレイヤー：ゲームオーバー画面 -->
     <div id="ui-gameover" class="ui-layer hidden">
         <h1 class="gameover-title">GAME OVER</h1>
         <p class="start-msg">PRESS ENTER TO TITLE</p>
     </div>
 
-    <!-- UIレイヤー：クリア画面 -->
     <div id="ui-clear" class="ui-layer hidden">
         <h1 class="clear-title">CLEARED</h1>
     </div>
