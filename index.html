@@ -517,16 +517,14 @@
             videoElem.loop = media.loop !== false;
 
             if (media.video) {
-                // 同じ動画の再読み込みを防止する判定
                 if (currentMediaVideo !== media.video) {
                     currentMediaVideo = media.video;
                     videoElem.src = media.video;
 
-                    // 読み込みエラー時の表示フォールバック設定
+                    // 読み込みエラー時の処理（動画を非表示にし静止画を維持）
                     videoElem.onerror = () => {
                         videoElem.classList.remove("active");
-                        videoElem.removeAttribute("src");
-                        videoElem.load();
+                        currentMediaVideo = null;
                     };
 
                     // 動画再生処理
@@ -535,6 +533,7 @@
                         playPromise.then(() => {
                             videoElem.classList.add("active");
                         }).catch(() => {
+                            // 自動再生制限やロード失敗時は動画を表示せず静止画を表示
                             videoElem.classList.remove("active");
                         });
                     }
@@ -690,7 +689,7 @@
             if (!currentQuestion) return;
 
             if (userChoice === currentQuestion.answer) {
-                // 正解時：進行動画ステートへ移行（questionCountの更新は動画終了時またはNキー押下時）
+                // 正解時：進行動画ステートへ移行
                 changeState(GAME_STATES.PROGRESS);
             } else {
                 // 不正解時：落下・ゲームオーバー演出へ移行
@@ -749,7 +748,7 @@
                 videoElem.play().then(() => videoElem.classList.add("active")).catch(() => {});
             }
 
-            // --- ステート別の鍵操作分岐 ---
+            // --- ステート別のキー操作分岐 ---
             if (currentState === GAME_STATES.TITLE) {
                 if (e.code === "Enter" || e.code === "Space") {
                     questionCount = 0;
