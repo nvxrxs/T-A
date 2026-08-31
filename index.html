@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <title>トロッコアドベンチャー</title>
-
     <style>
         /* ==========================================================================
            1. 画面全体の基本スタイル
@@ -335,7 +334,7 @@
         // ==========================================================================
         // 1. 定数・設定データの定義
         // ==========================================================================
-        
+       
         // スプレッドシートから公開されたCSVのデータ取得URL
         const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQbRsUm7p9ttAa6NSNEM-YIRj9Ah7iv4izikbgCemvecrlIMGMl4H80D3wljAFeFHAdFxAoySIBJCkb/pub?gid=0&single=true&output=csv";
 
@@ -357,7 +356,11 @@
             QUESTION_3: "QUESTION_3",
             QUESTION_4: "QUESTION_4",
             FALL: "FALL",
-            GAMEOVER: "GAMEOVER",
+            GAMEOVER: "GAMEOVER",         // ゲームオーバー状態（動的マッピング用）
+            GAMEOVER_0: "GAMEOVER_0",
+            GAMEOVER_1: "GAMEOVER_1",
+            GAMEOVER_2: "GAMEOVER_2",
+            GAMEOVER_3: "GAMEOVER_3",
             CLEAR: "CLEAR"
         };
 
@@ -377,7 +380,10 @@
             [GAME_STATES.QUESTION_3]:  { video: "media/bg-quiz3.mp4", poster: "media/bg-quiz3.jpg", loop: true },
             [GAME_STATES.QUESTION_4]:  { video: "media/bg-quiz4.mp4", poster: "media/bg-quiz4.jpg", loop: true },
             [GAME_STATES.FALL]:        { video: "media/bg-fall.mp4", poster: "media/bg-fall.JPG", loop: false },
-            [GAME_STATES.GAMEOVER]:    { video: "media/bg-gameover.mp4", poster: "media/bg-gameover.JPG", loop: true },
+            [GAME_STATES.GAMEOVER_0]:  { video: "media/bg-gameover0.mp4", poster: "media/bg-gameover0.JPG", loop: true },
+            [GAME_STATES.GAMEOVER_1]:  { video: "media/bg-gameover1.mp4", poster: "media/bg-gameover1.JPG", loop: true },
+            [GAME_STATES.GAMEOVER_2]:  { video: "media/bg-gameover2.mp4", poster: "media/bg-gameover2.JPG", loop: true },
+            [GAME_STATES.GAMEOVER_3]:  { video: "media/bg-gameover3.mp4", poster: "media/bg-gameover3.JPG", loop: true },
             [GAME_STATES.CLEAR]:       { video: "media/bg-clear.mp4", poster: "media/bg-clear.JPG", loop: true }
         };
 
@@ -605,11 +611,11 @@
                 renderOptionContent(document.getElementById("opt-a-text"), currentQuestion.optionA);
                 renderOptionContent(document.getElementById("opt-b-text"), currentQuestion.optionB);
             } else {
-                // 問題データが存在しない場合のフォールバック処理
+                // データがない場合のフォールバック（画面上はダミー表示）
                 currentQuestion = null;
-                document.getElementById("quiz-text").textContent = "問題が見つかりません";
-                renderOptionContent(document.getElementById("opt-a-text"), "---");
-                renderOptionContent(document.getElementById("opt-b-text"), "---");
+                document.getElementById("quiz-text").textContent = "問題準備中（キー入力で正解扱い）";
+                renderOptionContent(document.getElementById("opt-a-text"), "選択肢 A");
+                renderOptionContent(document.getElementById("opt-b-text"), "選択肢 B");
             }
         }
 
@@ -648,13 +654,16 @@
         function changeState(newState) {
             let targetState = newState;
 
-            // 進行状態・クイズ状態の場合はステップ数に応じてサブステートへ変換
+            // 進行状態・クイズ状態・ゲームオーバー状態の場合はステップ数に応じてサブステートへ変換
             if (newState === GAME_STATES.PROGRESS) {
                 const step = Math.min(Math.max(questionCount, 0), 4);
                 targetState = GAME_STATES[`PROGRESS_${step}`];
             } else if (newState === GAME_STATES.QUESTION) {
                 const step = Math.min(Math.max(questionCount, 0), 4);
                 targetState = GAME_STATES[`QUESTION_${step}`];
+            } else if (newState === GAME_STATES.GAMEOVER) {
+                const step = Math.min(Math.max(questionCount, 0), 3);
+                targetState = GAME_STATES[`GAMEOVER_${step}`];
             }
 
             currentState = targetState;
@@ -686,13 +695,18 @@
          * ユーザーの回答選択（A/B）判定処理
          */
         function handleAnswerSubmit(userChoice) {
-            if (!currentQuestion) return;
+            // スプレッドシートにデータが存在しない場合は無条件で正解扱いとしPROGRESSへ移行
+            if (!currentQuestion) {
+                changeState(GAME_STATES.PROGRESS);
+                return;
+            }
 
+            // データが存在する場合は回答を検証
             if (userChoice === currentQuestion.answer) {
-                // 正解時：進行動画ステートへ移行
+                // 正解時：PROGRESS（進捗演出）へ移行
                 changeState(GAME_STATES.PROGRESS);
             } else {
-                // 不正解時：落下・ゲームオーバー演出へ移行
+                // 不正解時：FALL（落下演出）へ移行（動画終了後にGAMEOVERへ移行）
                 changeState(GAME_STATES.FALL);
             }
         }
@@ -826,6 +840,9 @@
                         questionCount++;
                         changeState(GAME_STATES.QUESTION);
                     }
+                } else if (currentState === GAME_STATES.FALL) {
+                    // 落下動画（FALL）が終了したらゲームオーバー画面（GAMEOVER_0〜3）へ移行
+                    changeState(GAME_STATES.GAMEOVER);
                 }
             });
 
