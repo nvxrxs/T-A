@@ -226,15 +226,15 @@
             opacity: 0;
         }
 
-        /* 奥から手前に拡大表示するアニメーション */
+        /* 奥から手前にゆっくり拡大表示するアニメーション (1.5秒) */
         .quiz-question-box.animate-pop {
-            animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            animation: popIn 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
 
         @keyframes popIn {
             0% {
                 opacity: 0;
-                transform: scale(0.2);
+                transform: scale(0.1);
             }
             100% {
                 opacity: 1;
@@ -250,9 +250,9 @@
             opacity: 0;
         }
 
-        /* フェードイン表示アニメーション */
+        /* フェードイン表示アニメーション (0.6秒) */
         .quiz-options-container.animate-fade {
-            animation: fadeInUp 0.5s ease-out forwards;
+            animation: fadeInUp 0.6s ease-out forwards;
         }
 
         @keyframes fadeInUp {
@@ -353,7 +353,7 @@
         let selectedIndex = 0;
         let currentMediaVideo = null;
         let isAuthenticated = false;
-        let isAnimating = false; // アニメーション中のキー入力ロック用フラグ
+        let isAnimating = false;
 
         let selectedGenre = "";
         let selectedDifficulty = "";
@@ -526,26 +526,25 @@
             const qBox = document.querySelector(".quiz-question-box");
             const optsContainer = document.querySelector(".quiz-options-container");
 
-            // アニメーション用クラスのリセット
             qBox.classList.remove("animate-pop");
             optsContainer.classList.remove("animate-fade");
 
-            isAnimating = true; // キー入力をロック
+            isAnimating = true;
 
-            // 1. 問題文枠が奥から広がる (0.6秒)
+            // 1. 問題文枠がゆっくり広がる (1.5秒)
             setTimeout(() => {
                 qBox.classList.add("animate-pop");
             }, 50);
 
-            // 2. 問題枠表示後、選択肢が下からフェードイン (さらに0.6秒後)
+            // 2. 問題枠表示が完了した直後に選択肢が表示開始 (1.5秒後)
             setTimeout(() => {
                 optsContainer.classList.add("animate-fade");
-            }, 650);
+            }, 1550);
 
-            // 3. すべての表示演出が完了したらキー入力を解除 (全工程1.2秒)
+            // 3. 選択肢表示完了（+0.6秒）後にキー入力を解除 (全工程 2.15秒)
             setTimeout(() => {
                 isAnimating = false;
-            }, 1200);
+            }, 2150);
         }
 
         function changeState(newState) {
@@ -604,7 +603,6 @@
                 return;
             }
 
-            // 演出アニメーション中はEnter/Spaceなどの入力を無視する
             if (isAnimating) {
                 return;
             }
