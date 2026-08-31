@@ -226,7 +226,6 @@
             opacity: 0;
         }
 
-        /* 奥から手前にゆっくり拡大表示するアニメーション (1.5秒) */
         .quiz-question-box.animate-pop {
             animation: popIn 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
@@ -250,7 +249,6 @@
             opacity: 0;
         }
 
-        /* フェードイン表示アニメーション (0.6秒) */
         .quiz-options-container.animate-fade {
             animation: fadeInUp 0.6s ease-out forwards;
         }
@@ -297,7 +295,6 @@
             align-items: center;
         }
 
-        /* 選択肢画像用スタイル */
         .option-img {
             max-width: 100%;
             max-height: 18vh;
@@ -331,22 +328,22 @@
         };
 
         const MEDIA_PATHS = {
-            [GAME_STATES.TITLE]:      { video: "media/bg-title.mp4", poster: "media/bg-title.jpg", loop: true },
-            [GAME_STATES.GENRE]:      { video: "media/bg-title.mp4", poster: "media/bg-title.jpg", loop: true },
-            [GAME_STATES.DIFFICULTY]: { video: "media/bg-title.mp4", poster: "media/bg-title.jpg", loop: true },
-            [GAME_STATES.PROGRESS_0]: { video: "media/bg-progress0.mp4", poster: "media/bg-progress0.jpg", loop: false },
-            [GAME_STATES.PROGRESS_1]: { video: "media/bg-progress1.mp4", poster: "media/bg-progress1.jpg", loop: false },
-            [GAME_STATES.PROGRESS_2]: { video: "media/bg-progress2.mp4", poster: "media/bg-progress2.jpg", loop: false },
-            [GAME_STATES.PROGRESS_3]: { video: "media/bg-progress3.mp4", poster: "media/bg-progress3.jpg", loop: false },
-            [GAME_STATES.PROGRESS_4]: { video: "media/bg-progress4.mp4", poster: "media/bg-progress4.jpg", loop: false },
-            [GAME_STATES.QUESTION_0]: { video: "media/bg-quiz0.mp4", poster: "media/bg-quiz0.jpg", loop: true },
-            [GAME_STATES.QUESTION_1]: { video: "media/bg-quiz1.mp4", poster: "media/bg-quiz1.jpg", loop: true },
-            [GAME_STATES.QUESTION_2]: { video: "media/bg-quiz2.mp4", poster: "media/bg-quiz2.jpg", loop: true },
-            [GAME_STATES.QUESTION_3]: { video: "media/bg-quiz3.mp4", poster: "media/bg-quiz3.jpg", loop: true },
-            [GAME_STATES.QUESTION_4]: { video: "media/bg-quiz4.mp4", poster: "media/bg-quiz4.jpg", loop: true },
-            [GAME_STATES.FALL]:       { video: "media/bg-fall.mp4", poster: "media/bg-fall.JPG", loop: false },
-            [GAME_STATES.GAMEOVER]:   { video: "media/bg-gameover.mp4", poster: "media/bg-gameover.JPG", loop: true },
-            [GAME_STATES.CLEAR]:      { video: "media/bg-clear.mp4", poster: "media/bg-clear.JPG", loop: true }
+            [GAME_STATES.TITLE]:       { video: "media/bg-title.mp4", poster: "media/bg-title.jpg", loop: true },
+            [GAME_STATES.GENRE]:       { video: "media/bg-title.mp4", poster: "media/bg-title.jpg", loop: true },
+            [GAME_STATES.DIFFICULTY]:  { video: "media/bg-title.mp4", poster: "media/bg-title.jpg", loop: true },
+            [GAME_STATES.PROGRESS_0]:  { video: "media/bg-progress0.mp4", poster: "media/bg-progress0.jpg", loop: false },
+            [GAME_STATES.PROGRESS_1]:  { video: "media/bg-progress1.mp4", poster: "media/bg-progress1.jpg", loop: false },
+            [GAME_STATES.PROGRESS_2]:  { video: "media/bg-progress2.mp4", poster: "media/bg-progress2.jpg", loop: false },
+            [GAME_STATES.PROGRESS_3]:  { video: "media/bg-progress3.mp4", poster: "media/bg-progress3.jpg", loop: false },
+            [GAME_STATES.PROGRESS_4]:  { video: "media/bg-progress4.mp4", poster: "media/bg-progress4.jpg", loop: false },
+            [GAME_STATES.QUESTION_0]:  { video: "media/bg-quiz0.mp4", poster: "media/bg-quiz0.jpg", loop: true },
+            [GAME_STATES.QUESTION_1]:  { video: "media/bg-quiz1.mp4", poster: "media/bg-quiz1.jpg", loop: true },
+            [GAME_STATES.QUESTION_2]:  { video: "media/bg-quiz2.mp4", poster: "media/bg-quiz2.jpg", loop: true },
+            [GAME_STATES.QUESTION_3]:  { video: "media/bg-quiz3.mp4", poster: "media/bg-quiz3.jpg", loop: true },
+            [GAME_STATES.QUESTION_4]:  { video: "media/bg-quiz4.mp4", poster: "media/bg-quiz4.jpg", loop: true },
+            [GAME_STATES.FALL]:        { video: "media/bg-fall.mp4", poster: "media/bg-fall.JPG", loop: false },
+            [GAME_STATES.GAMEOVER]:    { video: "media/bg-gameover.mp4", poster: "media/bg-gameover.JPG", loop: true },
+            [GAME_STATES.CLEAR]:       { video: "media/bg-clear.mp4", poster: "media/bg-clear.JPG", loop: true }
         };
 
         let currentState = GAME_STATES.TITLE;
@@ -447,6 +444,7 @@
 
             if (media.poster) {
                 imgElem.src = media.poster;
+                imgElem.style.display = "block";
             }
 
             videoElem.loop = media.loop !== false;
@@ -471,8 +469,6 @@
                         videoElem.classList.add("active");
                     }).catch(() => {
                         videoElem.classList.remove("active");
-                        videoElem.removeAttribute("src");
-                        videoElem.load();
                     });
                 }
             } else {
@@ -541,17 +537,14 @@
 
             isAnimating = true;
 
-            // 1. 問題文枠がゆっくり広がる (1.5秒)
             setTimeout(() => {
                 qBox.classList.add("animate-pop");
             }, 50);
 
-            // 2. 問題枠表示が完了した直後に選択肢が表示開始 (1.5秒後)
             setTimeout(() => {
                 optsContainer.classList.add("animate-fade");
             }, 1550);
 
-            // 3. 選択肢表示完了（+0.6秒）後にキー入力を解除 (全工程 2.15秒)
             setTimeout(() => {
                 isAnimating = false;
             }, 2150);
@@ -680,11 +673,8 @@
 
                 if (hash === TARGET_HASH) {
                     document.getElementById("auth-modal").classList.add("hidden");
+                    isAuthenticated = true;
                     changeState(GAME_STATES.TITLE);
-
-                    setTimeout(() => {
-                        isAuthenticated = true;
-                    }, 50);
                 } else {
                     document.getElementById("auth-error").textContent = "パスワードが正しくありません";
                     e.target.value = "";
@@ -695,7 +685,7 @@
         window.addEventListener("DOMContentLoaded", () => {
             preloadMedia();
             fetchQuestions();
-            playMedia(GAME_STATES.TITLE);
+            changeState(GAME_STATES.TITLE);
 
             const videoElem = document.getElementById("bg-video");
             videoElem.addEventListener("ended", () => {
