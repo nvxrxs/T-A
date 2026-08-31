@@ -185,15 +185,7 @@
             font-size: 11vh;
             font-weight: bold;
             box-shadow: 0 2vh 2.5vh rgba(0, 0, 0, 0.9);
-            transition: transform 0.15s, background-color 0.15s, border-color 0.15s;
             box-sizing: border-box;
-        }
-        /* 選択中カードのハイライト効果 */
-        .select-card.selected {
-            transform: scale(1.1);
-            background: rgba(255, 255, 255, 0.35);
-            border-color: #ffd700;
-            box-shadow: 0 0 3vh rgba(255, 215, 0, 0.6);
         }
         .key-guide {
             margin-top: 5vh;
@@ -377,7 +369,6 @@
         // 2. グローバル変数（システム状態管理）
         // ==========================================================================
         let currentState = GAME_STATES.TITLE; // 現在のゲームステート
-        let selectedIndex = 0;               // カード選択時の現在インデックス（0: A/EASY, 1: B/HARD）
         let currentMediaVideo = null;        // 現在再生中の動画パス（重複ロード防止用）
         let isAuthenticated = false;         // パスワード認証フラグ
         let isAnimating = false;             // 問題・選択肢の演出中フラグ（キー割り込み防止用）
@@ -533,21 +524,6 @@
         // ==========================================================================
         // 4. UI・クイズロジック関連関数
         // ==========================================================================
-        /**
-         * カード選択状態のUI描画更新
-         */
-        function updateCardFocus(containerId) {
-            const container = document.getElementById(containerId);
-            if (!container) return;
-            const cards = container.querySelectorAll(".select-card");
-            cards.forEach((card, idx) => {
-                if (idx === selectedIndex) {
-                    card.classList.add("selected");
-                } else {
-                    card.classList.remove("selected");
-                }
-            });
-        }
 
         /**
          * 選択肢エリアの描画（拡張子判定によりテキスト／画像を分岐）
@@ -642,7 +618,6 @@
             }
 
             currentState = targetState;
-            selectedIndex = 0; // 選択インデックスを初期化
 
             // 全てのUI層を一旦非表示化
             document.querySelectorAll(".ui-layer").forEach(elem => elem.classList.add("hidden"));
@@ -655,10 +630,8 @@
                 document.getElementById("ui-title").classList.remove("hidden");
             } else if (targetState === GAME_STATES.GENRE) {
                 document.getElementById("ui-genre").classList.remove("hidden");
-                updateCardFocus("genre-cards");
             } else if (targetState === GAME_STATES.DIFFICULTY) {
                 document.getElementById("ui-difficulty").classList.remove("hidden");
-                updateCardFocus("diff-cards");
             } else if (targetState.startsWith("QUESTION_")) {
                 loadQuizData();
                 document.getElementById("ui-question").classList.remove("hidden");
@@ -755,14 +728,10 @@
             else if (currentState === GAME_STATES.GENRE) {
                 if (e.code === "Space") {
                     // 左を選択して即時確定
-                    selectedIndex = 0;
-                    updateCardFocus("genre-cards");
                     selectedGenre = "ジャンル A";
                     changeState(GAME_STATES.DIFFICULTY);
                 } else if (e.code === "Enter") {
                     // 右を選択して即時確定
-                    selectedIndex = 1;
-                    updateCardFocus("genre-cards");
                     selectedGenre = "ジャンル B";
                     changeState(GAME_STATES.DIFFICULTY);
                 }
@@ -770,14 +739,10 @@
             else if (currentState === GAME_STATES.DIFFICULTY) {
                 if (e.code === "Space") {
                     // 左を選択して即時確定
-                    selectedIndex = 0;
-                    updateCardFocus("diff-cards");
                     selectedDifficulty = "E";
                     changeState(GAME_STATES.PROGRESS);
                 } else if (e.code === "Enter") {
                     // 右を選択して即時確定
-                    selectedIndex = 1;
-                    updateCardFocus("diff-cards");
                     selectedDifficulty = "H";
                     changeState(GAME_STATES.PROGRESS);
                 }
