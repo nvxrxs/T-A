@@ -676,7 +676,11 @@
          * ユーザーの回答選択（A/B）判定処理
          */
         function handleAnswerSubmit(userChoice) {
-            if (!currentQuestion) return;
+            // スプレッドシートから問題文や正答が検出されない場合はテストプレイ用に無条件で正解とする
+            if (!currentQuestion || !currentQuestion.answer) {
+                changeState(GAME_STATES.PROGRESS);
+                return;
+            }
 
             // 選択回答とスプレッドシートの正解(A/B)を照合
             if (userChoice.toUpperCase() === currentQuestion.answer.toUpperCase()) {
@@ -747,19 +751,31 @@
             }
             else if (currentState === GAME_STATES.GENRE) {
                 if (e.code === "Space") {
-                    selectedIndex = (selectedIndex === 0) ? 1 : 0;
+                    // 左を選択して即時確定
+                    selectedIndex = 0;
                     updateCardFocus("genre-cards");
+                    selectedGenre = "ジャンル A";
+                    changeState(GAME_STATES.DIFFICULTY);
                 } else if (e.code === "Enter") {
-                    selectedGenre = selectedIndex === 0 ? "ジャンル A" : "ジャンル B";
+                    // 右を選択して即時確定
+                    selectedIndex = 1;
+                    updateCardFocus("genre-cards");
+                    selectedGenre = "ジャンル B";
                     changeState(GAME_STATES.DIFFICULTY);
                 }
             }
             else if (currentState === GAME_STATES.DIFFICULTY) {
                 if (e.code === "Space") {
-                    selectedIndex = (selectedIndex === 0) ? 1 : 0;
+                    // 左を選択して即時確定
+                    selectedIndex = 0;
                     updateCardFocus("diff-cards");
+                    selectedDifficulty = "E";
+                    changeState(GAME_STATES.PROGRESS);
                 } else if (e.code === "Enter") {
-                    selectedDifficulty = selectedIndex === 0 ? "E" : "H";
+                    // 右を選択して即時確定
+                    selectedIndex = 1;
+                    updateCardFocus("diff-cards");
+                    selectedDifficulty = "H";
                     changeState(GAME_STATES.PROGRESS);
                 }
             }
@@ -789,7 +805,7 @@
                 if (hash === TARGET_HASH) {
                     // 認証成功時：モーダル破棄・ゲーム開始
                     document.getElementById("auth-modal").classList.add("hidden");
-
+                    
                     // 入力欄からフォーカスを外してIME変換候補の表示を抑制
                     if (document.activeElement) {
                         document.activeElement.blur();
@@ -867,7 +883,7 @@
             <div class="select-card">A</div>
             <div class="select-card">B</div>
         </div>
-        <p class="key-guide">[ SPACE ]: 選択移動 / [ ENTER ]: 決定</p>
+        <p class="key-guide">[ SPACE ]: 左を選択 / [ ENTER ]: 右を選択</p>
     </div>
 
     <!-- UIレイヤー：難易度選択画面 -->
@@ -877,7 +893,7 @@
             <div class="select-card">EASY</div>
             <div class="select-card">HARD</div>
         </div>
-        <p class="key-guide">[ SPACE ]: 選択移動 / [ ENTER ]: 決定</p>
+        <p class="key-guide">[ SPACE ]: 左を選択 / [ ENTER ]: 右を選択</p>
     </div>
 
     <!-- UIレイヤー：クイズ問題・選択肢表示画面 -->
