@@ -5,28 +5,32 @@
     <title>トロッコアドベンチャー</title>
 
     <style>
-        /* 画面全体の基本設定 */
+        /* ==========================================================================
+           1. 画面全体の基本スタイル
+           ========================================================================== */
         html, body {
             margin: 0;
             padding: 0;
             width: 100vw;
             height: 100vh;
-            overflow: hidden;
+            overflow: hidden; /* スクロールバーを非表示にして全画面表示に対応 */
             background-color: #000;
             font-family: sans-serif;
             color: #fff;
-            user-select: none;
-            cursor: none;
+            user-select: none; /* テキスト選択を無効化 */
+            cursor: none;      /* マウスカーソルを非表示 */
         }
 
-        /* 背景メディア（画像・動画）配置コンテナ */
+        /* ==========================================================================
+           2. 背景メディア（画像・動画）レイアウト
+           ========================================================================== */
         .bg-container {
             position: fixed;
             top: 0;
             left: 0;
             width: 100vw;
             height: 100vh;
-            z-index: 1;
+            z-index: 1; /* UI要素より背面に配置 */
         }
 
         .bg-media {
@@ -35,9 +39,10 @@
             left: 0;
             width: 100%;
             height: 100%;
-            object-fit: cover;
+            object-fit: cover; /* 画面比率に関わらず全画面を覆うように拡大縮小 */
         }
 
+        /* 静止画（ポスター画像）の設定 */
         #bg-img {
             z-index: 1;
             display: block;
@@ -46,26 +51,30 @@
             object-fit: cover;
         }
 
+        /* 背景動画の設定（クロスフェード切り替え用） */
         #bg-video {
             z-index: 2;
             opacity: 0;
-            transition: opacity 0.3s ease;
+            transition: opacity 0.3s ease; /* 再生開始時に滑らかに表示 */
         }
 
         #bg-video.active {
             opacity: 1;
         }
 
+        /* 画面非表示用クラス */
         .hidden { display: none !important; }
 
-        /* パスワード認証モーダル */
+        /* ==========================================================================
+           3. パスワード認証モーダル
+           ========================================================================== */
         #auth-modal {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: 100;
+            z-index: 100; /* 最前面に表示 */
             background: rgba(0, 0, 0, 0.85);
             display: flex;
             flex-direction: column;
@@ -110,10 +119,12 @@
             text-shadow: none;
         }
 
-        /* 共通UIレイヤー */
+        /* ==========================================================================
+           4. UIレイヤー（共通設定）
+           ========================================================================== */
         .ui-layer {
             position: relative;
-            z-index: 10;
+            z-index: 10; /* メディアの上に重ねて表示 */
             width: 100vw;
             height: 100vh;
             display: flex;
@@ -122,10 +133,12 @@
             align-items: center;
             box-sizing: border-box;
             padding: 2vh 2vw;
-            text-shadow: 0 0.4vh 1.5vh rgba(0, 0, 0, 0.95);
+            text-shadow: 0 0.4vh 1.5vh rgba(0, 0, 0, 0.95); /* 可認性向上のための影 */
         }
 
-        /* タイトル画面UI */
+        /* --------------------------------------------------------------------------
+           4-1. タイトル画面
+           -------------------------------------------------------------------------- */
         .title {
             font-size: 12vh;
             margin-bottom: 4vh;
@@ -136,7 +149,7 @@
         .start-msg {
             font-size: 4vh;
             font-weight: bold;
-            animation: blink 1.5s infinite;
+            animation: blink 1.5s infinite; /* 点滅アニメーション */
         }
 
         .fullscreen-guide {
@@ -149,12 +162,15 @@
             font-weight: bold;
         }
 
+        /* 点滅用キーフレーム */
         @keyframes blink {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.2; }
         }
 
-        /* 選択画面共通UI */
+        /* --------------------------------------------------------------------------
+           4-2. 選択画面（ジャンル / 難易度）
+           -------------------------------------------------------------------------- */
         .section-title {
             font-size: 11vh;
             margin-bottom: 5vh;
@@ -170,7 +186,7 @@
             max-width: 90vw;
         }
 
-        /* 選択可能カード */
+        /* 選択カード基本スタイル */
         .select-card {
             width: 45vh;
             height: 45vh;
@@ -189,6 +205,7 @@
             box-sizing: border-box;
         }
 
+        /* 選択中カードのハイライト効果 */
         .select-card.selected {
             transform: scale(1.1);
             background: rgba(255, 255, 255, 0.35);
@@ -203,7 +220,9 @@
             color: #eee;
         }
 
-        /* クイズ画面UI */
+        /* --------------------------------------------------------------------------
+           4-3. クイズ画面スタイル & 演出アニメーション
+           -------------------------------------------------------------------------- */
         .quiz-container {
             width: 100%;
             height: 100%;
@@ -215,6 +234,7 @@
             box-sizing: border-box;
         }
 
+        /* 問題文ボックス */
         .quiz-question-box {
             background: rgba(0, 0, 0, 0.75);
             border: 0.5vh solid #fff;
@@ -229,6 +249,7 @@
             opacity: 0;
         }
 
+        /* 問題文が出現するポップインアニメーション */
         .quiz-question-box.animate-pop {
             animation: popIn 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
@@ -244,6 +265,7 @@
             }
         }
 
+        /* 選択肢コンテナ */
         .quiz-options-container {
             display: flex;
             justify-content: space-between;
@@ -252,6 +274,7 @@
             opacity: 0;
         }
 
+        /* 選択肢の下からのフェードイン表示 */
         .quiz-options-container.animate-fade {
             animation: fadeInUp 0.6s ease-out forwards;
         }
@@ -267,6 +290,7 @@
             }
         }
 
+        /* 各選択肢カード */
         .quiz-option-card {
             width: 38vw;
             min-height: 25vh;
@@ -298,6 +322,7 @@
             align-items: center;
         }
 
+        /* 選択肢画像の設定 */
         .option-img {
             max-width: 100%;
             max-height: 18vh;
@@ -307,19 +332,25 @@
     </style>
 
     <script>
+        // ==========================================================================
+        // 1. 定数・設定データの定義
+        // ==========================================================================
+        
+        // スプレッドシートから公開されたCSVのデータ取得URL
         const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQbRsUm7p9ttAa6NSNEM-YIRj9Ah7iv4izikbgCemvecrlIMGMl4H80D3wljAFeFHAdFxAoySIBJCkb/pub?gid=0&single=true&output=csv";
 
+        // ゲーム内の全状態（ステート）列挙
         const GAME_STATES = {
             TITLE: "TITLE",
             GENRE: "GENRE",
             DIFFICULTY: "DIFFICULTY",
-            PROGRESS: "PROGRESS",
+            PROGRESS: "PROGRESS",         // 進行状態（動的マッピング用）
             PROGRESS_0: "PROGRESS_0",
             PROGRESS_1: "PROGRESS_1",
             PROGRESS_2: "PROGRESS_2",
             PROGRESS_3: "PROGRESS_3",
             PROGRESS_4: "PROGRESS_4",
-            QUESTION: "QUESTION",
+            QUESTION: "QUESTION",         // クイズ出題状態（動的マッピング用）
             QUESTION_0: "QUESTION_0",
             QUESTION_1: "QUESTION_1",
             QUESTION_2: "QUESTION_2",
@@ -330,6 +361,7 @@
             CLEAR: "CLEAR"
         };
 
+        // 各ステートにおける背景メディアの設定（動画URL・静止画URL・ループ有無）
         const MEDIA_PATHS = {
             [GAME_STATES.TITLE]:       { video: "media/bg-title.mp4", poster: "media/bg-title.jpg", loop: true },
             [GAME_STATES.GENRE]:       { video: "media/bg-title.mp4", poster: "media/bg-title.jpg", loop: true },
@@ -349,21 +381,32 @@
             [GAME_STATES.CLEAR]:       { video: "media/bg-clear.mp4", poster: "media/bg-clear.JPG", loop: true }
         };
 
-        let currentState = GAME_STATES.TITLE;
-        let selectedIndex = 0;
-        let currentMediaVideo = null;
-        let isAuthenticated = false;
-        let isAnimating = false;
-
-        let selectedGenre = "";
-        let selectedDifficulty = "";
-        let questionCount = 0;
-
-        let questionDatabase = [];
-        let currentQuestion = null;
-
+        // パスワード認証用のSHA-256ハッシュ値
         const TARGET_HASH = "5817ae4948371f9b6b7d94615c0704e6a13ba5a773938351ebd832d0fcdbdf2f";
 
+        // ==========================================================================
+        // 2. グローバル変数（システム状態管理）
+        // ==========================================================================
+        let currentState = GAME_STATES.TITLE; // 現在のゲームステート
+        let selectedIndex = 0;               // カード選択時の現在インデックス（0: A/EASY, 1: B/HARD）
+        let currentMediaVideo = null;        // 現在再生中の動画パス（重複ロード防止用）
+        let isAuthenticated = false;         // パスワード認証フラグ
+        let isAnimating = false;             // 問題・選択肢の演出中フラグ（キー割り込み防止用）
+
+        let selectedGenre = "";              // プレイヤーが選択したジャンル
+        let selectedDifficulty = "";         // プレイヤーが選択した難易度
+        let questionCount = 0;               // 現在の進行問題インデックス（0〜4）
+
+        let questionDatabase = [];           // CSVからロードした問題データリスト
+        let currentQuestion = null;          // 現在表示中の問題オブジェクト
+
+        // ==========================================================================
+        // 3. ユーティリティ・システム制御関数
+        // ==========================================================================
+
+        /**
+         * 全画面表示の切り替え（トグル）
+         */
         function toggleFullScreen() {
             if (!document.fullscreenElement && !document.mozFullScreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement) {
                 const elem = document.documentElement;
@@ -385,6 +428,9 @@
             }
         }
 
+        /**
+         * 文字列の SHA-256 ハッシュ値を計算
+         */
         async function sha256(str) {
             const buff = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
             return Array.from(new Uint8Array(buff))
@@ -392,6 +438,9 @@
                 .join("");
         }
 
+        /**
+         * 外部スプレッドシートから問題データ（CSV）を取得
+         */
         async function fetchQuestions() {
             try {
                 const response = await fetch(CSV_URL);
@@ -402,10 +451,14 @@
             }
         }
 
+        /**
+         * CSV文字列をパースして `questionDatabase` に格納
+         */
         function parseCSV(text) {
             const lines = text.trim().split("\n");
             questionDatabase = [];
 
+            // 1行目はヘッダーのため除外して処理
             for (let i = 1; i < lines.length; i++) {
                 if (!lines[i].trim()) continue;
                 const cols = lines[i].split(",").map(col => col.trim().replace(/^"|"$/g, ''));
@@ -423,6 +476,9 @@
             }
         }
 
+        /**
+         * メディアファイル（画像・動画）のプリロード処理
+         */
         function preloadMedia() {
             Object.values(MEDIA_PATHS).forEach(media => {
                 if (media.poster) {
@@ -438,6 +494,9 @@
             });
         }
 
+        /**
+         * 指定されたステートに対応する背景メディア（静止画および動画）の再生切り替え
+         */
         function playMedia(stateKey) {
             const media = MEDIA_PATHS[stateKey];
             if (!media) return;
@@ -445,6 +504,7 @@
             const imgElem = document.getElementById("bg-img");
             const videoElem = document.getElementById("bg-video");
 
+            // --- 背景画像の切り替え処理 ---
             if (media.poster) {
                 imgElem.src = media.poster;
                 imgElem.style.display = "block";
@@ -453,19 +513,23 @@
                 imgElem.style.display = "none";
             }
 
+            // --- 背景動画の切り替え処理 ---
             videoElem.loop = media.loop !== false;
 
             if (media.video) {
+                // 同じ動画の再読み込みを防止する判定
                 if (currentMediaVideo !== media.video) {
                     currentMediaVideo = media.video;
                     videoElem.src = media.video;
 
+                    // 読み込みエラー時の表示フォールバック設定
                     videoElem.onerror = () => {
                         videoElem.classList.remove("active");
                         videoElem.removeAttribute("src");
                         videoElem.load();
                     };
 
+                    // 動画再生処理
                     const playPromise = videoElem.play();
                     if (playPromise !== undefined) {
                         playPromise.then(() => {
@@ -483,6 +547,13 @@
             }
         }
 
+        // ==========================================================================
+        // 4. UI・クイズロジック関連関数
+        // ==========================================================================
+
+        /**
+         * カード選択状態のUI描画更新
+         */
         function updateCardFocus(containerId) {
             const container = document.getElementById(containerId);
             if (!container) return;
@@ -496,21 +567,29 @@
             });
         }
 
+        /**
+         * 選択肢エリアの描画（拡張子判定によりテキスト／画像を分岐）
+         */
         function renderOptionContent(containerElem, value) {
             const imageExtensions = /\.(jpg|jpeg|png|gif|webp|svg)$/i;
             containerElem.innerHTML = "";
 
             if (imageExtensions.test(value)) {
+                // 画像ファイル名の場合は <img> タグを生成して埋め込み
                 const img = document.createElement("img");
                 img.src = `media/${value}`;
                 img.alt = "選択肢画像";
                 img.className = "option-img";
                 containerElem.appendChild(img);
             } else {
+                // 通常文字列の場合はテキストを埋め込み
                 containerElem.textContent = value;
             }
         }
 
+        /**
+         * 現在の進捗・ジャンル・難易度に合わせて問題データを抽出・読み込み
+         */
         function loadQuizData() {
             const matchingQuestions = questionDatabase.filter(q => 
                 q.genre === selectedGenre && 
@@ -519,6 +598,7 @@
             );
 
             if (matchingQuestions.length > 0) {
+                // 条件に合う問題の中からランダムで1問抽出
                 const randomIndex = Math.floor(Math.random() * matchingQuestions.length);
                 currentQuestion = matchingQuestions[randomIndex];
 
@@ -526,6 +606,7 @@
                 renderOptionContent(document.getElementById("opt-a-text"), currentQuestion.optionA);
                 renderOptionContent(document.getElementById("opt-b-text"), currentQuestion.optionB);
             } else {
+                // 問題データが存在しない場合のフォールバック処理
                 currentQuestion = null;
                 document.getElementById("quiz-text").textContent = "問題が見つかりません";
                 renderOptionContent(document.getElementById("opt-a-text"), "---");
@@ -533,31 +614,42 @@
             }
         }
 
+        /**
+         * クイズ出題時のアニメーション順次実行制御
+         */
         function triggerQuizSequence() {
             const qBox = document.querySelector(".quiz-question-box");
             const optsContainer = document.querySelector(".quiz-options-container");
 
+            // アニメーション用CSSクラスをリセット
             qBox.classList.remove("animate-pop");
             optsContainer.classList.remove("animate-fade");
 
-            isAnimating = true;
+            isAnimating = true; // アニメーション中フラグON
 
+            // 1. 問題文を表示
             setTimeout(() => {
                 qBox.classList.add("animate-pop");
             }, 50);
 
+            // 2. 選択肢を時間差で表示
             setTimeout(() => {
                 optsContainer.classList.add("animate-fade");
             }, 1550);
 
+            // 3. アニメーション完了・入力解放
             setTimeout(() => {
                 isAnimating = false;
             }, 2150);
         }
 
+        /**
+         * ゲーム状態（ステート）の遷移管理メイン関数
+         */
         function changeState(newState) {
             let targetState = newState;
 
+            // 進行状態・クイズ状態の場合はステップ数に応じてサブステートへ変換
             if (newState === GAME_STATES.PROGRESS) {
                 const step = Math.min(Math.max(questionCount, 0), 4);
                 targetState = GAME_STATES[`PROGRESS_${step}`];
@@ -567,12 +659,15 @@
             }
 
             currentState = targetState;
-            selectedIndex = 0;
+            selectedIndex = 0; // 選択インデックスを初期化
 
+            // 全てのUI層を一旦非表示化
             document.querySelectorAll(".ui-layer").forEach(elem => elem.classList.add("hidden"));
             
+            // 背景メディアを変更・再生
             playMedia(targetState);
 
+            // ステートに応じたUI層の表示切り替えと初期化
             if (targetState === GAME_STATES.TITLE) {
                 document.getElementById("ui-title").classList.remove("hidden");
             } else if (targetState === GAME_STATES.GENRE) {
@@ -588,54 +683,73 @@
             }
         }
 
+        /**
+         * ユーザーの回答選択（A/B）判定処理
+         */
         function handleAnswerSubmit(userChoice) {
             if (!currentQuestion) return;
 
             if (userChoice === currentQuestion.answer) {
+                // 正解時：進行動画ステートへ移行（questionCountの更新は動画終了時またはNキー押下時）
                 changeState(GAME_STATES.PROGRESS);
             } else {
+                // 不正解時：落下・ゲームオーバー演出へ移行
                 changeState(GAME_STATES.FALL);
             }
         }
 
+        // ==========================================================================
+        // 5. イベントリスナー（キーボード入力制御）
+        // ==========================================================================
         document.addEventListener("keydown", (e) => {
+            // パスワード認証前の場合は各種操作を無効化
             if (!isAuthenticated) return;
 
+            // --- [ F ] キー: 全画面切り替え ---
             if (e.code === "KeyF" || e.key === "f" || e.key === "F") {
                 e.preventDefault();
                 toggleFullScreen();
                 return;
             }
 
+            // 問題出現アニメーション中は誤操作防止のため入力無視
             if (isAnimating) {
                 return;
             }
 
+            // --- [ N ] キー: 進行動画のスキップ制御 ---
             if (e.code === "KeyN" || e.key === "n" || e.key === "N") {
                 if (currentState.startsWith("PROGRESS_")) {
                     e.preventDefault();
+
+                    // PROGRESS_4（全問正解時の最終演出）のときはNキーで問題に遷移させない
                     if (currentState === GAME_STATES.PROGRESS_4) return;
 
+                    // 再生中の動画を強制停止
                     const videoElem = document.getElementById("bg-video");
                     videoElem.pause();
 
+                    // 問題カウントを進めてクイズ画面に遷移
                     questionCount++;
                     changeState(GAME_STATES.QUESTION);
                     return;
                 }
             }
 
+            // デフォルトのブラウザショートカット挙動（スペースでのスクロール等）を防止
             if (e.code === "Space" || e.code === "Enter") {
                 e.preventDefault();
             } else {
                 return;
             }
 
+            // 動画再生がブラウザ制限で停止している場合の再開処理
             const videoElem = document.getElementById("bg-video");
             if (videoElem.paused && currentMediaVideo) {
                 videoElem.play().then(() => videoElem.classList.add("active")).catch(() => {});
             }
 
+            // --- ステート別の鍵操作分岐 ---
             if (currentState === GAME_STATES.TITLE) {
                 if (e.code === "Enter" || e.code === "Space") {
                     questionCount = 0;
@@ -662,13 +776,16 @@
             }
             else if (currentState.startsWith("QUESTION_")) {
                 if (e.code === "Space") {
-                    handleAnswerSubmit("A");
+                    handleAnswerSubmit("A"); // スペースキーで [ A ] を選択
                 } else if (e.code === "Enter") {
-                    handleAnswerSubmit("B");
+                    handleAnswerSubmit("B"); // エンターキーで [ B ] を選択
                 }
             }
         });
 
+        /**
+         * パスワード認証フォーム送信処理
+         */
         async function handleAuthSubmit(e) {
             if (e.key === "Enter") {
                 e.preventDefault();
@@ -678,33 +795,42 @@
                 const hash = await sha256(inputVal);
 
                 if (hash === TARGET_HASH) {
+                    // 認証成功時：モーダル破棄・ゲーム開始
                     document.getElementById("auth-modal").classList.add("hidden");
                     isAuthenticated = true;
                     changeState(GAME_STATES.TITLE);
                 } else {
+                    // 認証失敗時：エラー表示
                     document.getElementById("auth-error").textContent = "パスワードが正しくありません";
                     e.target.value = "";
                 }
             }
         }
 
+        // ==========================================================================
+        // 6. 初期化（DOM読み込み完了時）
+        // ==========================================================================
         window.addEventListener("DOMContentLoaded", () => {
-            preloadMedia();
-            fetchQuestions();
+            preloadMedia();    // メディア事前読込
+            fetchQuestions();  // スプレッドシート問題取得
             changeState(GAME_STATES.TITLE);
 
+            // 背景動画の再生完了（ended）に伴うステート自動遷移イベント
             const videoElem = document.getElementById("bg-video");
             videoElem.addEventListener("ended", () => {
                 if (currentState.startsWith("PROGRESS_")) {
                     if (currentState === GAME_STATES.PROGRESS_4) {
+                        // 最終進行動画（PROGRESS_4）が終了したらクリア画面へ移行
                         changeState(GAME_STATES.CLEAR);
                     } else {
+                        // 通常進行動画が終了したら問題を更新して次クイズへ移行
                         questionCount++;
                         changeState(GAME_STATES.QUESTION);
                     }
                 }
             });
 
+            // パスワード入力用フォーカスをセット
             const passInput = document.getElementById("pass-input");
             if (passInput) passInput.focus();
         });
@@ -712,6 +838,7 @@
 </head>
 <body>
 
+    <!-- パスワード認証モーダル画面 -->
     <div id="auth-modal">
         <div class="auth-box">
             <h2>認証が必要です</h2>
@@ -720,17 +847,20 @@
         </div>
     </div>
 
+    <!-- 背景メディア描画領域 -->
     <div class="bg-container">
         <img id="bg-img" class="bg-media" src="" alt="背景画像">
         <video id="bg-video" class="bg-media" autoplay muted playsinline></video>
     </div>
 
+    <!-- UIレイヤー：タイトル画面 -->
     <div id="ui-title" class="ui-layer hidden">
         <p class="fullscreen-guide">[ F ]: 全画面表示</p>
         <h1 class="title">Title!!</h1>
         <p class="start-msg">PRESS ENTER TO START</p>
     </div>
 
+    <!-- UIレイヤー：ジャンル選択画面 -->
     <div id="ui-genre" class="ui-layer hidden">
         <h2 class="section-title">SELECT GENRE</h2>
         <div id="genre-cards" class="card-container">
@@ -740,6 +870,7 @@
         <p class="key-guide">[ SPACE ]: 選択移動 / [ ENTER ]: 決定</p>
     </div>
 
+    <!-- UIレイヤー：難易度選択画面 -->
     <div id="ui-difficulty" class="ui-layer hidden">
         <h2 class="section-title">SELECT DIFFICULTY</h2>
         <div id="diff-cards" class="card-container">
@@ -749,11 +880,14 @@
         <p class="key-guide">[ SPACE ]: 選択移動 / [ ENTER ]: 決定</p>
     </div>
 
+    <!-- UIレイヤー：クイズ問題・選択肢表示画面 -->
     <div id="ui-question" class="ui-layer hidden">
         <div class="quiz-container">
+            <!-- 問題文テキストボックス -->
             <div class="quiz-question-box">
                 <span id="quiz-text">問題文を取得中...</span>
             </div>
+            <!-- 選択肢ボックス（A/B） -->
             <div id="quiz-options" class="quiz-options-container">
                 <div class="quiz-option-card">
                     <span class="option-label">A [ SPACE ]</span>
