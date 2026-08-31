@@ -344,36 +344,66 @@
         };
         
         // 各ステートにおける背景メディアの設定（動画URL・静止画URL・ループ有無）
-        // Progress 1〜5 は左右(L/R) × 正誤(correct/wrong) の4ファイルを配置できるように拡張プロパティを設定
+        // Progress 1〜5 は左右(L/R) × 正誤(correct/wrong) の計8ファイル（poster 4種 + video 4種）構成
         const MEDIA_PATHS = {
             [GAME_STATES.TITLE]:       { video: "media/bg-title.mp4", poster: "media/bg-title.jpg", loop: true },
             [GAME_STATES.GENRE]:       { video: "media/bg-title.mp4", poster: "media/bg-title.jpg", loop: true },
             [GAME_STATES.DIFFICULTY]:  { video: "media/bg-title.mp4", poster: "media/bg-title.jpg", loop: true },
             [GAME_STATES.PROGRESS_0]:  { video: "media/bg-progress0.mp4", poster: "media/bg-progress0.jpg", loop: false },
             [GAME_STATES.PROGRESS_1]:  { 
-                video: "media/bg-progress1.mp4", poster: "media/bg-progress1.jpg", loop: false,
-                L_correct: "media/bg-progress1-L-correct.mp4", L_wrong: "media/bg-progress1-L-wrong.mp4",
-                R_correct: "media/bg-progress1-R-correct.mp4", R_wrong: "media/bg-progress1-R-wrong.mp4"
+                loop: false,
+                poster_L_correct: "media/bg-progress1-L-correct.jpg",
+                poster_L_wrong:   "media/bg-progress1-L-wrong.jpg",
+                poster_R_correct: "media/bg-progress1-R-correct.jpg",
+                poster_R_wrong:   "media/bg-progress1-R-wrong.jpg",
+                video_L_correct:  "media/bg-progress1-L-correct.mp4",
+                video_L_wrong:    "media/bg-progress1-L-wrong.mp4",
+                video_R_correct:  "media/bg-progress1-R-correct.mp4",
+                video_R_wrong:    "media/bg-progress1-R-wrong.mp4"
             },
             [GAME_STATES.PROGRESS_2]:  { 
-                video: "media/bg-progress2.mp4", poster: "media/bg-progress2.jpg", loop: false,
-                L_correct: "media/bg-progress2-L-correct.mp4", L_wrong: "media/bg-progress2-L-wrong.mp4",
-                R_correct: "media/bg-progress2-R-correct.mp4", R_wrong: "media/bg-progress2-R-wrong.mp4"
+                loop: false,
+                poster_L_correct: "media/bg-progress2-L-correct.jpg",
+                poster_L_wrong:   "media/bg-progress2-L-wrong.jpg",
+                poster_R_correct: "media/bg-progress2-R-correct.jpg",
+                poster_R_wrong:   "media/bg-progress2-R-wrong.jpg",
+                video_L_correct:  "media/bg-progress2-L-correct.mp4",
+                video_L_wrong:    "media/bg-progress2-L-wrong.mp4",
+                video_R_correct:  "media/bg-progress2-R-correct.mp4",
+                video_R_wrong:    "media/bg-progress2-R-wrong.mp4"
             },
             [GAME_STATES.PROGRESS_3]:  { 
-                video: "media/bg-progress3.mp4", poster: "media/bg-progress3.jpg", loop: false,
-                L_correct: "media/bg-progress3-L-correct.mp4", L_wrong: "media/bg-progress3-L-wrong.mp4",
-                R_correct: "media/bg-progress3-R-correct.mp4", R_wrong: "media/bg-progress3-R-wrong.mp4"
+                loop: false,
+                poster_L_correct: "media/bg-progress3-L-correct.jpg",
+                poster_L_wrong:   "media/bg-progress3-L-wrong.jpg",
+                poster_R_correct: "media/bg-progress3-R-correct.jpg",
+                poster_R_wrong:   "media/bg-progress3-R-wrong.jpg",
+                video_L_correct:  "media/bg-progress3-L-correct.mp4",
+                video_L_wrong:    "media/bg-progress3-L-wrong.mp4",
+                video_R_correct:  "media/bg-progress3-R-correct.mp4",
+                video_R_wrong:    "media/bg-progress3-R-wrong.mp4"
             },
             [GAME_STATES.PROGRESS_4]:  { 
-                video: "media/bg-progress4.mp4", poster: "media/bg-progress4.jpg", loop: false,
-                L_correct: "media/bg-progress4-L-correct.mp4", L_wrong: "media/bg-progress4-L-wrong.mp4",
-                R_correct: "media/bg-progress4-R-correct.mp4", R_wrong: "media/bg-progress4-R-wrong.mp4"
+                loop: false,
+                poster_L_correct: "media/bg-progress4-L-correct.jpg",
+                poster_L_wrong:   "media/bg-progress4-L-wrong.jpg",
+                poster_R_correct: "media/bg-progress4-R-correct.jpg",
+                poster_R_wrong:   "media/bg-progress4-R-wrong.jpg",
+                video_L_correct:  "media/bg-progress4-L-correct.mp4",
+                video_L_wrong:    "media/bg-progress4-L-wrong.mp4",
+                video_R_correct:  "media/bg-progress4-R-correct.mp4",
+                video_R_wrong:    "media/bg-progress4-R-wrong.mp4"
             },
             [GAME_STATES.PROGRESS_5]:  { 
-                video: "media/bg-progress5.mp4", poster: "media/bg-progress5.jpg", loop: false,
-                L_correct: "media/bg-progress5-L-correct.mp4", L_wrong: "media/bg-progress5-L-wrong.mp4",
-                R_correct: "media/bg-progress5-R-correct.mp4", R_wrong: "media/bg-progress5-R-wrong.mp4"
+                loop: false,
+                poster_L_correct: "media/bg-progress5-L-correct.jpg",
+                poster_L_wrong:   "media/bg-progress5-L-wrong.jpg",
+                poster_R_correct: "media/bg-progress5-R-correct.jpg",
+                poster_R_wrong:   "media/bg-progress5-R-wrong.jpg",
+                video_L_correct:  "media/bg-progress5-L-correct.mp4",
+                video_L_wrong:    "media/bg-progress5-L-wrong.mp4",
+                video_R_correct:  "media/bg-progress5-R-correct.mp4",
+                video_R_wrong:    "media/bg-progress5-R-wrong.mp4"
             },
             [GAME_STATES.QUESTION_0]:  { video: "media/bg-quiz0.mp4", poster: "media/bg-quiz0.jpg", loop: true },
             [GAME_STATES.QUESTION_1]:  { video: "media/bg-quiz1.mp4", poster: "media/bg-quiz1.jpg", loop: true },
@@ -479,16 +509,19 @@
          */
         function preloadMedia() {
             Object.values(MEDIA_PATHS).forEach(media => {
-                if (media.poster) {
-                    const img = new Image();
-                    img.src = media.poster;
-                }
-                if (media.video) {
-                    const req = new XMLHttpRequest();
-                    req.open('GET', media.video, true);
-                    req.responseType = 'blob';
-                    req.send();
-                }
+                Object.values(media).forEach(val => {
+                    if (typeof val === "string") {
+                        if (/\.(jpg|jpeg|png|gif|webp|svg)$/i.test(val)) {
+                            const img = new Image();
+                            img.src = val;
+                        } else if (/\.(mp4|webm|mov)$/i.test(val)) {
+                            const req = new XMLHttpRequest();
+                            req.open('GET', val, true);
+                            req.responseType = 'blob';
+                            req.send();
+                        }
+                    }
+                });
             });
         }
 
@@ -502,8 +535,13 @@
             const imgElem = document.getElementById("bg-img");
             const videoElem = document.getElementById("bg-video");
 
-            if (media.poster) {
-                imgElem.src = media.poster;
+            // デフォルト画像または分岐用の代表画像を取得
+            const posterSrc = media.poster || media.poster_L_correct || null;
+            // デフォルト動画または分岐用の代表動画を取得
+            const videoSrc = media.video || media.video_L_correct || null;
+
+            if (posterSrc) {
+                imgElem.src = posterSrc;
                 imgElem.style.display = "block";
             } else {
                 imgElem.removeAttribute("src");
@@ -511,10 +549,10 @@
             }
 
             videoElem.loop = media.loop !== false;
-            if (media.video) {
-                if (currentMediaVideo !== media.video) {
-                    currentMediaVideo = media.video;
-                    videoElem.src = media.video;
+            if (videoSrc) {
+                if (currentMediaVideo !== videoSrc) {
+                    currentMediaVideo = videoSrc;
+                    videoElem.src = videoSrc;
                     
                     videoElem.onerror = () => {
                         videoElem.classList.remove("active");
