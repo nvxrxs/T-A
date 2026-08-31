@@ -41,7 +41,7 @@
         #bg-img {
             z-index: 1;
             display: block;
-            width :100vw;
+            width: 100vw;
             height: 100vh;
             object-fit: cover;
         }
@@ -445,36 +445,40 @@
             const imgElem = document.getElementById("bg-img");
             const videoElem = document.getElementById("bg-video");
 
+            // 画像の制御（統一）
             if (media.poster) {
                 imgElem.src = media.poster;
                 imgElem.style.display = "block";
+            } else {
+                imgElem.removeAttribute("src");
+                imgElem.style.display = "none";
             }
 
+            // 動画の制御
             videoElem.loop = media.loop !== false;
 
-            if (currentMediaVideo === media.video && media.video !== "") {
-                return;
-            }
-            currentMediaVideo = media.video;
-
             if (media.video) {
-                videoElem.src = media.video;
+                if (currentMediaVideo !== media.video) {
+                    currentMediaVideo = media.video;
+                    videoElem.src = media.video;
 
-                videoElem.onerror = () => {
-                    videoElem.classList.remove("active");
-                    videoElem.removeAttribute("src");
-                    videoElem.load();
-                };
-
-                const playPromise = videoElem.play();
-                if (playPromise !== undefined) {
-                    playPromise.then(() => {
-                        videoElem.classList.add("active");
-                    }).catch(() => {
+                    videoElem.onerror = () => {
                         videoElem.classList.remove("active");
-                    });
+                        videoElem.removeAttribute("src");
+                        videoElem.load();
+                    };
+
+                    const playPromise = videoElem.play();
+                    if (playPromise !== undefined) {
+                        playPromise.then(() => {
+                            videoElem.classList.add("active");
+                        }).catch(() => {
+                            videoElem.classList.remove("active");
+                        });
+                    }
                 }
             } else {
+                currentMediaVideo = null;
                 videoElem.classList.remove("active");
                 videoElem.removeAttribute("src");
                 videoElem.load();
