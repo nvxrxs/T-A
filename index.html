@@ -526,7 +526,7 @@
         // ==========================================================================
 
         /**
-         * 選択されたカードを中央に寄せて拡大し、非選択カードを消すエフェクト
+         * 選択されたカードを中央に寄せて拡大し、非選択カードを縮小しながら消すエフェクト
          */
         function animateSelection(containerId, cardSelector, selectedIndex, callback) {
             const container = document.getElementById(containerId);
@@ -539,9 +539,10 @@
             const selectedCard = cards[selectedIndex];
             const unselectedCard = cards[selectedIndex === 0 ? 1 : 0];
 
-            // 非選択カードをフェードアウト
-            unselectedCard.style.transition = "opacity 0.4s ease";
+            // 非選択カードをフェードアウト＆縮小
+            unselectedCard.style.transition = "opacity 0.4s ease, transform 0.4s ease";
             unselectedCard.style.opacity = "0";
+            unselectedCard.style.transform = "scale(0.8)";
 
             // 選択カードの中央移動＆拡大計算
             const rect = selectedCard.getBoundingClientRect();
@@ -553,9 +554,12 @@
             const moveX = screenCenterX - cardCenterX;
             const moveY = screenCenterY - cardCenterY;
 
-            // アニメーション実行
-            selectedCard.style.transition = "transform 0.5s cubic-bezier(0.25, 1, 0.5, 1)";
+            // アニメーション実行と同時に黄色枠・発光エフェクトを追加
+            selectedCard.style.transition = "transform 0.5s cubic-bezier(0.25, 1, 0.5, 1), border-color 0.3s, background-color 0.3s, box-shadow 0.3s";
             selectedCard.style.transform = `translate(${moveX}px, ${moveY}px) scale(1.2)`;
+            selectedCard.style.borderColor = "#ffd700";
+            selectedCard.style.backgroundColor = "rgba(255, 255, 255, 0.35)";
+            selectedCard.style.boxShadow = "0 0 3vh rgba(255, 215, 0, 0.8)";
             selectedCard.style.zIndex = "20";
 
             // アニメーション終了＋静止時間（合計1.2秒）待機後にコールバック
@@ -574,6 +578,9 @@
                 card.style.opacity = "";
                 card.style.transform = "";
                 card.style.zIndex = "";
+                card.style.borderColor = "";
+                card.style.backgroundColor = "";
+                card.style.boxShadow = "";
             });
         }
 
@@ -760,7 +767,7 @@
                 }
             }
 
-            // デフォルトのブラウザショートカット挙挙動（スペースでのスクロール等）を防止
+            // デフォルトのブラウザショートカット挙動（スペースでのスクロール等）を防止
             if (e.code === "Space" || e.code === "Enter") {
                 e.preventDefault();
             } else {
