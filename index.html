@@ -257,6 +257,18 @@
             font-size: 4.5vh;
             font-weight: bold;
             text-align: center;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* 選択肢画像用スタイル */
+        .option-img {
+            max-width: 100%;
+            max-height: 18vh;
+            object-fit: contain;
+            border-radius: 1vh;
         }
     </style>
 
@@ -438,6 +450,21 @@
             });
         }
 
+        function renderOptionContent(containerElem, value) {
+            const imageExtensions = /\.(jpg|jpeg|png|gif|webp|svg)$/i;
+            containerElem.innerHTML = "";
+
+            if (imageExtensions.test(value)) {
+                const img = document.createElement("img");
+                img.src = `media/${value}`;
+                img.alt = "選択肢画像";
+                img.className = "option-img";
+                containerElem.appendChild(img);
+            } else {
+                containerElem.textContent = value;
+            }
+        }
+
         function loadQuizData() {
             const matchingQuestions = questionDatabase.filter(q => 
                 q.genre === selectedGenre && 
@@ -450,13 +477,13 @@
                 currentQuestion = matchingQuestions[randomIndex];
 
                 document.getElementById("quiz-text").textContent = currentQuestion.question;
-                document.getElementById("opt-a-text").textContent = currentQuestion.optionA;
-                document.getElementById("opt-b-text").textContent = currentQuestion.optionB;
+                renderOptionContent(document.getElementById("opt-a-text"), currentQuestion.optionA);
+                renderOptionContent(document.getElementById("opt-b-text"), currentQuestion.optionB);
             } else {
                 currentQuestion = null;
                 document.getElementById("quiz-text").textContent = "問題が見つかりません";
-                document.getElementById("opt-a-text").textContent = "---";
-                document.getElementById("opt-b-text").textContent = "---";
+                renderOptionContent(document.getElementById("opt-a-text"), "---");
+                renderOptionContent(document.getElementById("opt-b-text"), "---");
             }
         }
 
