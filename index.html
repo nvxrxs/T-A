@@ -19,7 +19,6 @@
             user-select: none; /* テキスト選択を無効化 */
             cursor: none;      /* マウスカーソルを非表示 */
         }
-
         /* ==========================================================================
            2. 背景メディア（画像・動画）レイアウト
            ========================================================================== */
@@ -31,7 +30,6 @@
             height: 100vh;
             z-index: 1; /* UI要素より背面に配置 */
         }
-
         .bg-media {
             position: absolute;
             top: 0;
@@ -40,7 +38,6 @@
             height: 100%;
             object-fit: cover; /* 画面比率に関わらず全画面を覆うように拡大縮小 */
         }
-
         /* 静止画（ポスター画像）の設定 */
         #bg-img {
             z-index: 1;
@@ -49,18 +46,15 @@
             height: 100vh;
             object-fit: cover;
         }
-
         /* 背景動画の設定（クロスフェード切り替え用） */
         #bg-video {
             z-index: 2;
             opacity: 0;
             transition: opacity 0.3s ease; /* 再生開始時に滑らかに表示 */
         }
-
         #bg-video.active {
             opacity: 1;
         }
-
         /* 画面非表示用クラス */
         .hidden { display: none !important; }
 
@@ -80,7 +74,6 @@
             justify-content: center;
             align-items: center;
         }
-
         .auth-box {
             background: #222;
             width: 200px;
@@ -91,14 +84,12 @@
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.9);
             box-sizing: border-box;
         }
-
         .auth-box h2 {
             font-size: 12px;
             margin: 0 0 20px 0;
             color: #fff;
             text-shadow: none;
         }
-
         .auth-input {
             width: 100%;
             font-size: 10px;
@@ -109,7 +100,6 @@
             outline: none;
             box-sizing: border-box;
         }
-
         .auth-error {
             color: #ff4d4d;
             margin-top: 15px;
@@ -144,13 +134,11 @@
             letter-spacing: 0.1em;
             font-weight: 900;
         }
-
         .start-msg {
             font-size: 4vh;
             font-weight: bold;
             animation: blink 1.5s infinite; /* 点滅アニメーション */
         }
-
         .fullscreen-guide {
             position: absolute;
             top: 2vh;
@@ -160,7 +148,6 @@
             color: #aaa;
             font-weight: bold;
         }
-
         /* 点滅用キーフレーム */
         @keyframes blink {
             0%, 100% { opacity: 1; }
@@ -176,7 +163,6 @@
             letter-spacing: 0.05em;
             font-weight: bold;
         }
-
         .card-container {
             display: flex;
             gap: 4vw;
@@ -184,7 +170,6 @@
             align-items: center;
             max-width: 90vw;
         }
-
         /* 選択カード基本スタイル */
         .select-card {
             width: 45vh;
@@ -203,7 +188,6 @@
             transition: transform 0.15s, background-color 0.15s, border-color 0.15s;
             box-sizing: border-box;
         }
-
         /* 選択中カードのハイライト効果 */
         .select-card.selected {
             transform: scale(1.1);
@@ -211,7 +195,6 @@
             border-color: #ffd700;
             box-shadow: 0 0 3vh rgba(255, 215, 0, 0.6);
         }
-
         .key-guide {
             margin-top: 5vh;
             font-size: 3vh;
@@ -232,7 +215,6 @@
             padding: 5vh 5vw;
             box-sizing: border-box;
         }
-
         /* 問題文ボックス */
         .quiz-question-box {
             background: rgba(0, 0, 0, 0.75);
@@ -247,12 +229,10 @@
             box-shadow: 0 1vh 2vh rgba(0, 0, 0, 0.8);
             opacity: 0;
         }
-
         /* 問題文が出現するポップインアニメーション */
         .quiz-question-box.animate-pop {
             animation: popIn 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
-
         @keyframes popIn {
             0% {
                 opacity: 0;
@@ -263,7 +243,6 @@
                 transform: scale(1);
             }
         }
-
         /* 選択肢コンテナ */
         .quiz-options-container {
             display: flex;
@@ -272,12 +251,10 @@
             margin-bottom: 5vh;
             opacity: 0;
         }
-
         /* 選択肢の下からのフェードイン表示 */
         .quiz-options-container.animate-fade {
             animation: fadeInUp 0.6s ease-out forwards;
         }
-
         @keyframes fadeInUp {
             0% {
                 opacity: 0;
@@ -288,7 +265,6 @@
                 transform: translateY(0);
             }
         }
-
         /* 各選択肢カード */
         .quiz-option-card {
             width: 38vw;
@@ -303,14 +279,12 @@
             padding: 2vh;
             box-sizing: border-box;
         }
-
         .option-label {
             font-size: 4vh;
             color: #ffd700;
             font-weight: bold;
             margin-bottom: 1vh;
         }
-
         .option-text {
             font-size: 4.5vh;
             font-weight: bold;
@@ -320,7 +294,6 @@
             justify-content: center;
             align-items: center;
         }
-
         /* 選択肢画像の設定 */
         .option-img {
             max-width: 100%;
@@ -328,16 +301,33 @@
             object-fit: contain;
             border-radius: 1vh;
         }
-    </style>
 
+        /* --------------------------------------------------------------------------
+           4-4. ゲームオーバー・クリア画面
+           -------------------------------------------------------------------------- */
+        .gameover-title {
+            font-size: 13vh;
+            color: #ff3333;
+            margin-bottom: 4vh;
+            letter-spacing: 0.08em;
+            font-weight: 900;
+        }
+        .clear-title {
+            font-size: 13vh;
+            color: #ffd700;
+            margin-bottom: 4vh;
+            letter-spacing: 0.08em;
+            font-weight: 900;
+        }
+    </style>
     <script>
         // ==========================================================================
         // 1. 定数・設定データの定義
         // ==========================================================================
-       
+        
         // スプレッドシートから公開されたCSVのデータ取得URL
         const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQbRsUm7p9ttAa6NSNEM-YIRj9Ah7iv4izikbgCemvecrlIMGMl4H80D3wljAFeFHAdFxAoySIBJCkb/pub?gid=0&single=true&output=csv";
-
+        
         // ゲーム内の全状態（ステート）列挙
         const GAME_STATES = {
             TITLE: "TITLE",
@@ -356,14 +346,10 @@
             QUESTION_3: "QUESTION_3",
             QUESTION_4: "QUESTION_4",
             FALL: "FALL",
-            GAMEOVER: "GAMEOVER",         // ゲームオーバー状態（動的マッピング用）
-            GAMEOVER_0: "GAMEOVER_0",
-            GAMEOVER_1: "GAMEOVER_1",
-            GAMEOVER_2: "GAMEOVER_2",
-            GAMEOVER_3: "GAMEOVER_3",
+            GAMEOVER: "GAMEOVER",
             CLEAR: "CLEAR"
         };
-
+        
         // 各ステートにおける背景メディアの設定（動画URL・静止画URL・ループ有無）
         const MEDIA_PATHS = {
             [GAME_STATES.TITLE]:       { video: "media/bg-title.mp4", poster: "media/bg-title.jpg", loop: true },
@@ -380,13 +366,10 @@
             [GAME_STATES.QUESTION_3]:  { video: "media/bg-quiz3.mp4", poster: "media/bg-quiz3.jpg", loop: true },
             [GAME_STATES.QUESTION_4]:  { video: "media/bg-quiz4.mp4", poster: "media/bg-quiz4.jpg", loop: true },
             [GAME_STATES.FALL]:        { video: "media/bg-fall.mp4", poster: "media/bg-fall.JPG", loop: false },
-            [GAME_STATES.GAMEOVER_0]:  { video: "media/bg-gameover0.mp4", poster: "media/bg-gameover0.JPG", loop: true },
-            [GAME_STATES.GAMEOVER_1]:  { video: "media/bg-gameover1.mp4", poster: "media/bg-gameover1.JPG", loop: true },
-            [GAME_STATES.GAMEOVER_2]:  { video: "media/bg-gameover2.mp4", poster: "media/bg-gameover2.JPG", loop: true },
-            [GAME_STATES.GAMEOVER_3]:  { video: "media/bg-gameover3.mp4", poster: "media/bg-gameover3.JPG", loop: true },
+            [GAME_STATES.GAMEOVER]:    { video: "media/bg-gameover.mp4", poster: "media/bg-gameover.JPG", loop: true },
             [GAME_STATES.CLEAR]:       { video: "media/bg-clear.mp4", poster: "media/bg-clear.JPG", loop: true }
         };
-
+        
         // パスワード認証用のハッシュ値
         const TARGET_HASH = "5817ae4948371f9b6b7d94615c0704e6a13ba5a773938351ebd832d0fcdbdf2f";
 
@@ -398,18 +381,15 @@
         let currentMediaVideo = null;        // 現在再生中の動画パス（重複ロード防止用）
         let isAuthenticated = false;         // パスワード認証フラグ
         let isAnimating = false;             // 問題・選択肢の演出中フラグ（キー割り込み防止用）
-
         let selectedGenre = "";              // プレイヤーが選択したジャンル
         let selectedDifficulty = "";         // プレイヤーが選択した難易度
         let questionCount = 0;               // 現在の進行問題インデックス（0〜4）
-
         let questionDatabase = [];           // CSVからロードした問題データリスト
         let currentQuestion = null;          // 現在表示中の問題オブジェクト
 
         // ==========================================================================
         // 3. ユーティリティ・システム制御関数
         // ==========================================================================
-
         /**
          * 全画面表示の切り替え（トグル）
          */
@@ -463,7 +443,6 @@
         function parseCSV(text) {
             const lines = text.trim().split("\n");
             questionDatabase = [];
-
             // 1行目はヘッダーのため除外して処理
             for (let i = 1; i < lines.length; i++) {
                 if (!lines[i].trim()) continue;
@@ -521,12 +500,11 @@
 
             // --- 背景動画の切り替え処理 ---
             videoElem.loop = media.loop !== false;
-
             if (media.video) {
                 if (currentMediaVideo !== media.video) {
                     currentMediaVideo = media.video;
                     videoElem.src = media.video;
-
+                    
                     // 読み込みエラー時の処理（動画を非表示にし静止画を維持）
                     videoElem.onerror = () => {
                         videoElem.classList.remove("active");
@@ -555,7 +533,6 @@
         // ==========================================================================
         // 4. UI・クイズロジック関連関数
         // ==========================================================================
-
         /**
          * カード選択状態のUI描画更新
          */
@@ -578,7 +555,6 @@
         function renderOptionContent(containerElem, value) {
             const imageExtensions = /\.(jpg|jpeg|png|gif|webp|svg)$/i;
             containerElem.innerHTML = "";
-
             if (imageExtensions.test(value)) {
                 // 画像ファイル名の場合は <img> タグを生成して埋め込み
                 const img = document.createElement("img");
@@ -596,9 +572,9 @@
          * 現在の進捗・ジャンル・難易度に合わせて問題データを抽出・読み込み
          */
         function loadQuizData() {
-            const matchingQuestions = questionDatabase.filter(q => 
-                q.genre === selectedGenre && 
-                q.difficulty === selectedDifficulty && 
+            const matchingQuestions = questionDatabase.filter(q =>
+                q.genre === selectedGenre &&
+                q.difficulty === selectedDifficulty &&
                 q.step === questionCount
             );
 
@@ -611,11 +587,11 @@
                 renderOptionContent(document.getElementById("opt-a-text"), currentQuestion.optionA);
                 renderOptionContent(document.getElementById("opt-b-text"), currentQuestion.optionB);
             } else {
-                // データがない場合のフォールバック（画面上はダミー表示）
+                // 問題データが存在しない場合のフォールバック処理
                 currentQuestion = null;
-                document.getElementById("quiz-text").textContent = "問題準備中（キー入力で正解扱い）";
-                renderOptionContent(document.getElementById("opt-a-text"), "選択肢 A");
-                renderOptionContent(document.getElementById("opt-b-text"), "選択肢 B");
+                document.getElementById("quiz-text").textContent = "問題が見つかりません";
+                renderOptionContent(document.getElementById("opt-a-text"), "---");
+                renderOptionContent(document.getElementById("opt-b-text"), "---");
             }
         }
 
@@ -654,16 +630,13 @@
         function changeState(newState) {
             let targetState = newState;
 
-            // 進行状態・クイズ状態・ゲームオーバー状態の場合はステップ数に応じてサブステートへ変換
+            // 進行状態・クイズ状態の場合はステップ数に応じてサブステートへ変換
             if (newState === GAME_STATES.PROGRESS) {
                 const step = Math.min(Math.max(questionCount, 0), 4);
                 targetState = GAME_STATES[`PROGRESS_${step}`];
             } else if (newState === GAME_STATES.QUESTION) {
                 const step = Math.min(Math.max(questionCount, 0), 4);
                 targetState = GAME_STATES[`QUESTION_${step}`];
-            } else if (newState === GAME_STATES.GAMEOVER) {
-                const step = Math.min(Math.max(questionCount, 0), 3);
-                targetState = GAME_STATES[`GAMEOVER_${step}`];
             }
 
             currentState = targetState;
@@ -688,6 +661,12 @@
                 loadQuizData();
                 document.getElementById("ui-question").classList.remove("hidden");
                 triggerQuizSequence();
+            } else if (targetState === GAME_STATES.FALL) {
+                document.getElementById("ui-fall").classList.remove("hidden");
+            } else if (targetState === GAME_STATES.GAMEOVER) {
+                document.getElementById("ui-gameover").classList.remove("hidden");
+            } else if (targetState === GAME_STATES.CLEAR) {
+                document.getElementById("ui-clear").classList.remove("hidden");
             }
         }
 
@@ -695,18 +674,13 @@
          * ユーザーの回答選択（A/B）判定処理
          */
         function handleAnswerSubmit(userChoice) {
-            // スプレッドシートにデータが存在しない場合は無条件で正解扱いとしPROGRESSへ移行
-            if (!currentQuestion) {
-                changeState(GAME_STATES.PROGRESS);
-                return;
-            }
+            if (!currentQuestion) return;
 
-            // データが存在する場合は回答を検証
             if (userChoice === currentQuestion.answer) {
-                // 正解時：PROGRESS（進捗演出）へ移行
+                // 正解時：進行動画ステートへ移行
                 changeState(GAME_STATES.PROGRESS);
             } else {
-                // 不正解時：FALL（落下演出）へ移行（動画終了後にGAMEOVERへ移行）
+                // 不正解時：落下・ゲームオーバー演出へ移行
                 changeState(GAME_STATES.FALL);
             }
         }
@@ -734,7 +708,6 @@
             if (e.code === "KeyN" || e.key === "n" || e.key === "N") {
                 if (currentState.startsWith("PROGRESS_")) {
                     e.preventDefault();
-
                     // PROGRESS_4（全問正解時の最終演出）のときはNキーで問題に遷移させない
                     if (currentState === GAME_STATES.PROGRESS_4) return;
 
@@ -768,7 +741,7 @@
                     questionCount = 0;
                     changeState(GAME_STATES.GENRE);
                 }
-            } 
+            }
             else if (currentState === GAME_STATES.GENRE) {
                 if (e.code === "Space") {
                     selectedIndex = (selectedIndex === 0) ? 1 : 0;
@@ -777,7 +750,7 @@
                     selectedGenre = selectedIndex === 0 ? "ジャンル A" : "ジャンル B";
                     changeState(GAME_STATES.DIFFICULTY);
                 }
-            } 
+            }
             else if (currentState === GAME_STATES.DIFFICULTY) {
                 if (e.code === "Space") {
                     selectedIndex = (selectedIndex === 0) ? 1 : 0;
@@ -794,6 +767,11 @@
                     handleAnswerSubmit("B"); // エンターキーで [ B ] を選択
                 }
             }
+            else if (currentState === GAME_STATES.GAMEOVER || currentState === GAME_STATES.CLEAR) {
+                if (e.code === "Enter" || e.code === "Space") {
+                    changeState(GAME_STATES.TITLE);
+                }
+            }
         });
 
         /**
@@ -803,13 +781,17 @@
             if (e.key === "Enter") {
                 e.preventDefault();
                 e.stopPropagation();
-
                 const inputVal = e.target.value;
                 const hash = await sha256(inputVal);
-
                 if (hash === TARGET_HASH) {
                     // 認証成功時：モーダル破棄・ゲーム開始
                     document.getElementById("auth-modal").classList.add("hidden");
+
+                    // 入力欄からフォーカスを外してIME変換候補の表示を抑制
+                    if (document.activeElement) {
+                        document.activeElement.blur();
+                    }
+
                     isAuthenticated = true;
                     changeState(GAME_STATES.TITLE);
                 } else {
@@ -841,7 +823,7 @@
                         changeState(GAME_STATES.QUESTION);
                     }
                 } else if (currentState === GAME_STATES.FALL) {
-                    // 落下動画（FALL）が終了したらゲームオーバー画面（GAMEOVER_0〜3）へ移行
+                    // 落下動画終了後にゲームオーバー画面へ移行
                     changeState(GAME_STATES.GAMEOVER);
                 }
             });
@@ -853,7 +835,6 @@
     </script>
 </head>
 <body>
-
     <!-- パスワード認証モーダル画面 -->
     <div id="auth-modal">
         <div class="auth-box">
@@ -903,6 +884,7 @@
             <div class="quiz-question-box">
                 <span id="quiz-text">問題文を取得中...</span>
             </div>
+
             <!-- 選択肢ボックス（A/B） -->
             <div id="quiz-options" class="quiz-options-container">
                 <div class="quiz-option-card">
@@ -917,5 +899,20 @@
         </div>
     </div>
 
+    <!-- UIレイヤー：落下画面 -->
+    <div id="ui-fall" class="ui-layer hidden">
+    </div>
+
+    <!-- UIレイヤー：ゲームオーバー画面 -->
+    <div id="ui-gameover" class="ui-layer hidden">
+        <h1 class="gameover-title">GAME OVER</h1>
+        <p class="start-msg">PRESS ENTER TO TITLE</p>
+    </div>
+
+    <!-- UIレイヤー：クリア画面 -->
+    <div id="ui-clear" class="ui-layer hidden">
+        <h1 class="clear-title">STAGE CLEAR!!</h1>
+        <p class="start-msg">PRESS ENTER TO TITLE</p>
+    </div>
 </body>
 </html>
