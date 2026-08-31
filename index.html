@@ -526,6 +526,58 @@
         // ==========================================================================
 
         /**
+         * 選択されたカードを中央に寄せて拡大し、非選択カードを消すエフェクト
+         */
+        function animateSelection(containerId, cardSelector, selectedIndex, callback) {
+            const container = document.getElementById(containerId);
+            const cards = container.querySelectorAll(cardSelector);
+            if (!cards || cards.length < 2) {
+                if(callback) callback();
+                return;
+            }
+
+            const selectedCard = cards[selectedIndex];
+            const unselectedCard = cards[selectedIndex === 0 ? 1 : 0];
+
+            // 非選択カードをフェードアウト
+            unselectedCard.style.transition = "opacity 0.4s ease";
+            unselectedCard.style.opacity = "0";
+
+            // 選択カードの中央移動＆拡大計算
+            const rect = selectedCard.getBoundingClientRect();
+            const cardCenterX = rect.left + rect.width / 2;
+            const cardCenterY = rect.top + rect.height / 2;
+            const screenCenterX = window.innerWidth / 2;
+            const screenCenterY = window.innerHeight / 2;
+
+            const moveX = screenCenterX - cardCenterX;
+            const moveY = screenCenterY - cardCenterY;
+
+            // アニメーション実行
+            selectedCard.style.transition = "transform 0.5s cubic-bezier(0.25, 1, 0.5, 1)";
+            selectedCard.style.transform = `translate(${moveX}px, ${moveY}px) scale(1.2)`;
+            selectedCard.style.zIndex = "20";
+
+            // アニメーション終了＋静止時間（合計1.2秒）待機後にコールバック
+            setTimeout(() => {
+                if(callback) callback();
+            }, 1200);
+        }
+
+        /**
+         * アニメーションで付与されたカードのインラインスタイルを初期化する
+         */
+        function resetCardStyles() {
+            const allCards = document.querySelectorAll(".select-card, .quiz-option-card");
+            allCards.forEach(card => {
+                card.style.transition = "";
+                card.style.opacity = "";
+                card.style.transform = "";
+                card.style.zIndex = "";
+            });
+        }
+
+        /**
          * 選択肢エリアの描画（拡張子判定によりテキスト／画像を分岐）
          */
         function renderOptionContent(containerElem, value) {
@@ -606,6 +658,9 @@
          * ゲーム状態（ステート）の遷移管理メイン関数
          */
         function changeState(newState) {
+            // アニメーションで付与されたカードのスタイルをリセット
+            resetCardStyles();
+
             let targetState = newState;
 
             // 進行状態・クイズ状態の場合はステップ数に応じてサブステートへ変換
@@ -705,7 +760,7 @@
                 }
             }
 
-            // デフォルトのブラウザショートカット挙動（スペースでのスクロール等）を防止
+            // デフォルトのブラウザショートカット挙挙動（スペースでのスクロール等）を防止
             if (e.code === "Space" || e.code === "Enter") {
                 e.preventDefault();
             } else {
@@ -727,31 +782,51 @@
             }
             else if (currentState === GAME_STATES.GENRE) {
                 if (e.code === "Space") {
-                    // 左を選択して即時確定
-                    selectedGenre = "ジャンル A";
-                    changeState(GAME_STATES.DIFFICULTY);
+                    isAnimating = true;
+                    animateSelection("genre-cards", ".select-card", 0, () => {
+                        selectedGenre = "ジャンル A";
+                        isAnimating = false;
+                        changeState(GAME_STATES.DIFFICULTY);
+                    });
                 } else if (e.code === "Enter") {
-                    // 右を選択して即時確定
-                    selectedGenre = "ジャンル B";
-                    changeState(GAME_STATES.DIFFICULTY);
+                    isAnimating = true;
+                    animateSelection("genre-cards", ".select-card", 1, () => {
+                        selectedGenre = "ジャンル B";
+                        isAnimating = false;
+                        changeState(GAME_STATES.DIFFICULTY);
+                    });
                 }
             }
             else if (currentState === GAME_STATES.DIFFICULTY) {
                 if (e.code === "Space") {
-                    // 左を選択して即時確定
-                    selectedDifficulty = "E";
-                    changeState(GAME_STATES.PROGRESS);
+                    isAnimating = true;
+                    animateSelection("diff-cards", ".select-card", 0, () => {
+                        selectedDifficulty = "E";
+                        isAnimating = false;
+                        changeState(GAME_STATES.PROGRESS);
+                    });
                 } else if (e.code === "Enter") {
-                    // 右を選択して即時確定
-                    selectedDifficulty = "H";
-                    changeState(GAME_STATES.PROGRESS);
+                    isAnimating = true;
+                    animateSelection("diff-cards", ".select-card", 1, () => {
+                        selectedDifficulty = "H";
+                        isAnimating = false;
+                        changeState(GAME_STATES.PROGRESS);
+                    });
                 }
             }
             else if (currentState.startsWith("QUESTION_")) {
                 if (e.code === "Space") {
-                    handleAnswerSubmit("A"); // スペースキーで [ A ] を選択
+                    isAnimating = true;
+                    animateSelection("quiz-options", ".quiz-option-card", 0, () => {
+                        isAnimating = false;
+                        handleAnswerSubmit("A");
+                    });
                 } else if (e.code === "Enter") {
-                    handleAnswerSubmit("B"); // エンターキーで [ B ] を選択
+                    isAnimating = true;
+                    animateSelection("quiz-options", ".quiz-option-card", 1, () => {
+                        isAnimating = false;
+                        handleAnswerSubmit("B");
+                    });
                 }
             }
             else if (currentState === GAME_STATES.GAMEOVER || currentState === GAME_STATES.CLEAR) {
