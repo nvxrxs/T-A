@@ -572,10 +572,12 @@
          * 現在の進捗・ジャンル・難易度に合わせて問題データを抽出・読み込み
          */
         function loadQuizData() {
+            // スプレッドシートのステップ値（1〜5）に合わせて questionCount（0〜4）に +1 を加算して検索
+            const currentStep = questionCount + 1;
             const matchingQuestions = questionDatabase.filter(q =>
                 q.genre === selectedGenre &&
                 q.difficulty === selectedDifficulty &&
-                q.step === questionCount
+                q.step === currentStep
             );
 
             if (matchingQuestions.length > 0) {
@@ -676,8 +678,9 @@
         function handleAnswerSubmit(userChoice) {
             if (!currentQuestion) return;
 
-            if (userChoice === currentQuestion.answer) {
-                // 正解時：進行動画ステートへ移行
+            // 選択回答とスプレッドシートの正解(A/B)を照合
+            if (userChoice.toUpperCase() === currentQuestion.answer.toUpperCase()) {
+                // 正解時：進行演出へ移行
                 changeState(GAME_STATES.PROGRESS);
             } else {
                 // 不正解時：落下・ゲームオーバー演出へ移行
