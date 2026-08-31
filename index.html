@@ -711,16 +711,24 @@
          * ユーザーの回答選択（A/B）判定処理
          */
         function handleAnswerSubmit(userChoice) {
+            let isCorrect = false;
+
             // スプレッドシートから問題文や正答が検出されない場合はテストプレイ用に無条件で正解とする
             if (!currentQuestion || !currentQuestion.answer) {
-                changeState(GAME_STATES.PROGRESS);
-                return;
+                isCorrect = true;
+            } else if (userChoice.toUpperCase() === currentQuestion.answer.toUpperCase()) {
+                isCorrect = true;
             }
 
-            // 選択回答とスプレッドシートの正解(A/B)を照合
-            if (userChoice.toUpperCase() === currentQuestion.answer.toUpperCase()) {
-                // 正解時：進行演出へ移行
-                changeState(GAME_STATES.PROGRESS);
+            if (isCorrect) {
+                if (questionCount >= 4) {
+                    // 全問正解の場合は直接クリアへ
+                    changeState(GAME_STATES.CLEAR);
+                } else {
+                    // 正解かつ次問題がある場合はカウントを進めて次の進行動画へ
+                    questionCount++;
+                    changeState(GAME_STATES.PROGRESS);
+                }
             } else {
                 // 不正解時：落下・ゲームオーバー演出へ移行
                 changeState(GAME_STATES.FALL);
@@ -755,14 +763,7 @@
                     const videoElem = document.getElementById("bg-video");
                     videoElem.pause();
 
-                    if (currentState === GAME_STATES.PROGRESS_4) {
-                        // PROGRESS_4 のときはNキーで即座にCLEARへ移行
-                        changeState(GAME_STATES.CLEAR);
-                    } else {
-                        // 問題カウントを進めてクイズ画面に遷移
-                        questionCount++;
-                        changeState(GAME_STATES.QUESTION);
-                    }
+                    changeState(GAME_STATES.QUESTION);
                     return;
                 }
             }
@@ -883,14 +884,7 @@
             const videoElem = document.getElementById("bg-video");
             videoElem.addEventListener("ended", () => {
                 if (currentState.startsWith("PROGRESS_")) {
-                    if (currentState === GAME_STATES.PROGRESS_4) {
-                        // 最終進行動画（PROGRESS_4）が終了したらクリア画面へ移行
-                        changeState(GAME_STATES.CLEAR);
-                    } else {
-                        // 通常進行動画が終了したら問題を更新して次クイズへ移行
-                        questionCount++;
-                        changeState(GAME_STATES.QUESTION);
-                    }
+                    changeState(GAME_STATES.QUESTION);
                 } else if (currentState === GAME_STATES.FALL) {
                     // 落下動画終了後にゲームオーバー画面へ移行
                     changeState(GAME_STATES.GAMEOVER);
