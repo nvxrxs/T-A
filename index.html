@@ -422,8 +422,8 @@
         let currentMediaVideo = null;        // 現在再生中の動画パス（重複ロード防止用）
         let isAuthenticated = false;         // パスワード認証フラグ
         let isAnimating = false;             // 問題・選択肢の演出中フラグ（キー割り込み防止用）
-        let selectedGenre = "";              // プレイヤーが選択したジャンル
-        let selectedDifficulty = "";         // プレイヤーが選択した難易度
+        let selectedGenre = "";              // プレイヤーが選択したジャンル ("A" または "B")
+        let selectedDifficulty = "";         // プレイヤーが選択した難易度 ("E" または "H")
         let questionCount = 0;               // 現在の進行問題インデックス（0〜4）
         let questionDatabase = [];           // CSVからロードした問題データリスト
         let currentQuestion = null;          // 現在表示中の問題オブジェクト
@@ -468,11 +468,12 @@
         }
 
         /**
-         * 外部スプレッドシートから問題データ（CSV）を取得
+         * 外部スプレッドシートから問題データ（CSV）を取得（キャッシュ無効化付き）
          */
         async function fetchQuestions() {
             try {
-                const response = await fetch(CSV_URL);
+                const fetchUrl = `${CSV_URL}&_t=${Date.now()}`;
+                const response = await fetch(fetchUrl, { cache: "no-store" });
                 const csvText = await response.text();
                 parseCSV(csvText);
             } catch (error) {
@@ -491,7 +492,7 @@
                 const cols = lines[i].split(",").map(col => col.trim().replace(/^"|"$/g, ''));
                 if (cols.length >= 7) {
                     questionDatabase.push({
-                        genre: cols[0],
+                        genre: cols[0].toUpperCase(),
                         difficulty: cols[1].toUpperCase(),
                         step: parseInt(cols[2], 10),
                         question: cols[3],
@@ -835,14 +836,14 @@
                 if (e.code === "Space") {
                     isAnimating = true;
                     animateSelection("genre-cards", ".select-card", 0, () => {
-                        selectedGenre = "ジャンル A";
+                        selectedGenre = "A";
                         isAnimating = false;
                         changeState(GAME_STATES.DIFFICULTY);
                     });
                 } else if (e.code === "Enter") {
                     isAnimating = true;
                     animateSelection("genre-cards", ".select-card", 1, () => {
-                        selectedGenre = "ジャンル B";
+                        selectedGenre = "B";
                         isAnimating = false;
                         changeState(GAME_STATES.DIFFICULTY);
                     });
