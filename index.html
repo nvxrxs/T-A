@@ -331,20 +331,18 @@
             PROGRESS_2: "PROGRESS_2",
             PROGRESS_3: "PROGRESS_3",
             PROGRESS_4: "PROGRESS_4",
-            PROGRESS_5: "PROGRESS_5",     // 第5問正解後の最終進行
+            PROGRESS_5: "PROGRESS_5",     // 第5問回答後の最終進行
             QUESTION: "QUESTION",         // クイズ出題状態（動的マッピング用）
             QUESTION_0: "QUESTION_0",
             QUESTION_1: "QUESTION_1",
             QUESTION_2: "QUESTION_2",
             QUESTION_3: "QUESTION_3",
             QUESTION_4: "QUESTION_4",
-            FALL: "FALL",
             GAMEOVER: "GAMEOVER",
             CLEAR: "CLEAR"
         };
         
-        // 各ステートにおける背景メディアの設定（動画URL・静止画URL・ループ有無）
-        // Progress 1〜5 は左右(L/R) × 正誤(correct/wrong) の計8ファイル（poster 4種 + video 4種）構成
+        // 各ステートにおける背景メディアの設定（静止画URL 4種 + 動画URL 4種）
         const MEDIA_PATHS = {
             [GAME_STATES.TITLE]:       { video: "media/bg-title.mp4", poster: "media/bg-title.jpg", loop: true },
             [GAME_STATES.GENRE]:       { video: "media/bg-title.mp4", poster: "media/bg-title.jpg", loop: true },
@@ -410,7 +408,6 @@
             [GAME_STATES.QUESTION_2]:  { video: "media/bg-quiz2.mp4", poster: "media/bg-quiz2.jpg", loop: true },
             [GAME_STATES.QUESTION_3]:  { video: "media/bg-quiz3.mp4", poster: "media/bg-quiz3.jpg", loop: true },
             [GAME_STATES.QUESTION_4]:  { video: "media/bg-quiz4.mp4", poster: "media/bg-quiz4.jpg", loop: true },
-            [GAME_STATES.FALL]:        { video: "media/bg-fall.mp4", poster: "media/bg-fall.JPG", loop: false },
             [GAME_STATES.GAMEOVER]:    { video: "media/bg-gameover.mp4", poster: "media/bg-gameover.JPG", loop: true },
             [GAME_STATES.CLEAR]:       { video: "media/bg-clear.mp4", poster: "media/bg-clear.jpg", loop: true }
         };
@@ -430,6 +427,8 @@
         let questionCount = 0;               // 現在の進行問題インデックス（0〜4）
         let questionDatabase = [];           // CSVからロードした問題データリスト
         let currentQuestion = null;          // 現在表示中の問題オブジェクト
+        let lastAnswerSide = "L";            // 直前に回答した左右 ("L" または "R")
+        let lastAnswerCorrect = true;        // 直前の回答の正誤 (true または false)
 
         // ==========================================================================
         // 3. ユーティリティ・システム制御関数
@@ -535,11 +534,20 @@
             const imgElem = document.getElementById("bg-img");
             const videoElem = document.getElementById("bg-video");
 
-            // デフォルト画像または分岐用の代表画像を取得
-            const posterSrc = media.poster || media.poster_L_correct || null;
-            // デフォルト動画または分岐用の代表動画を取得
-            const videoSrc = media.video || media.video_L_correct || null;
+            let posterSrc = null;
+            let videoSrc = null;
 
+            // Progress 1〜5 の場合は直前の回答（左右・正誤）に応じたプロパティを解決
+            if (stateKey.startsWith("PROGRESS_") && stateKey !== GAME_STATES.PROGRESS_0) {
+                const branchKey = `${lastAnswerSide}_${lastAnswerCorrect ? "correct" : "wrong"}`;
+                posterSrc = media[`poster_${branchKey}`] || media.poster || null;
+                videoSrc  = media[`video_${branchKey}`]  || media.video  || null;
+            } else {
+                posterSrc = media.poster || null;
+                videoSrc  = media.video  || null;
+            }
+
+            // 静止画の設定
             if (posterSrc) {
                 imgElem.src = posterSrc;
                 imgElem.style.display = "block";
@@ -548,6 +556,7 @@
                 imgElem.style.display = "none";
             }
 
+            // 背景動画の設定（動画が存在しない場合は静止画を維持）
             videoElem.loop = media.loop !== false;
             if (videoSrc) {
                 if (currentMediaVideo !== videoSrc) {
@@ -735,8 +744,6 @@
                 loadQuizData();
                 document.getElementById("ui-question").classList.remove("hidden");
                 triggerQuizSequence();
-            } else if (targetState === GAME_STATES.FALL) {
-                document.getElementById("ui-fall").classList.remove("hidden");
             } else if (targetState === GAME_STATES.GAMEOVER) {
                 document.getElementById("ui-gameover").classList.remove("hidden");
             } else if (targetState === GAME_STATES.CLEAR) {
@@ -748,21 +755,23 @@
          * ユーザーの回答選択（A/B）判定処理
          */
         function handleAnswerSubmit(userChoice) {
+            const side = userChoice.toUpperCase() === "A" ? "L" : "R";
             let isCorrect = false;
 
+            // スプレッドシートから問題文や正答が検出されない場合はテストプレイ用に無条件で正解とする
             if (!currentQuestion || !currentQuestion.answer) {
                 isCorrect = true;
             } else if (userChoice.toUpperCase() === currentQuestion.answer.toUpperCase()) {
                 isCorrect = true;
             }
 
-            if (isCorrect) {
-                // 正解時はカウントを進めて対応する Progress（1〜5）へ移行
-                questionCount++;
-                changeState(GAME_STATES.PROGRESS);
-            } else {
-                changeState(GAME_STATES.FALL);
-            }
+            // 選択した左右と正誤結果を記録
+            lastAnswerSide = side;
+            lastAnswerCorrect = isCorrect;
+
+            // 次の Progress ステップ（1〜5）へ進める
+            questionCount++;
+            changeState(GAME_STATES.PROGRESS);
         }
 
         // ==========================================================================
@@ -790,11 +799,14 @@
                     const videoElem = document.getElementById("bg-video");
                     videoElem.pause();
 
-                    if (currentState === GAME_STATES.PROGRESS_5) {
-                        // PROGRESS_5 終了時はクリア画面へ
+                    if (!lastAnswerCorrect) {
+                        // 不正解の進行中の場合は直接ゲームオーバー画面へ
+                        changeState(GAME_STATES.GAMEOVER);
+                    } else if (currentState === GAME_STATES.PROGRESS_5) {
+                        // PROGRESS_5 正解終了時はクリア画面へ
                         changeState(GAME_STATES.CLEAR);
                     } else {
-                        // 通常進行動画終了時は現在の questionCount に対応する問題画面へ
+                        // PROGRESS_0〜4 正解終了時は対応する問題画面へ
                         changeState(GAME_STATES.QUESTION);
                     }
                     return;
@@ -843,6 +855,8 @@
                         selectedDifficulty = "E";
                         isAnimating = false;
                         questionCount = 0;
+                        lastAnswerSide = "L";
+                        lastAnswerCorrect = true;
                         changeState(GAME_STATES.PROGRESS); // PROGRESS_0 へ遷移
                     });
                 } else if (e.code === "Enter") {
@@ -851,6 +865,8 @@
                         selectedDifficulty = "H";
                         isAnimating = false;
                         questionCount = 0;
+                        lastAnswerSide = "L";
+                        lastAnswerCorrect = true;
                         changeState(GAME_STATES.PROGRESS); // PROGRESS_0 へ遷移
                     });
                 }
@@ -914,15 +930,16 @@
             const videoElem = document.getElementById("bg-video");
             videoElem.addEventListener("ended", () => {
                 if (currentState.startsWith("PROGRESS_")) {
-                    if (currentState === GAME_STATES.PROGRESS_5) {
-                        // 最終進行動画（PROGRESS_5）終了後はクリア画面へ移行
+                    if (!lastAnswerCorrect) {
+                        // 不正解の進行動画終了後は直接ゲームオーバー画面へ移行
+                        changeState(GAME_STATES.GAMEOVER);
+                    } else if (currentState === GAME_STATES.PROGRESS_5) {
+                        // 最終進行動画（PROGRESS_5）正解終了後はクリア画面へ移行
                         changeState(GAME_STATES.CLEAR);
                     } else {
-                        // PROGRESS_0〜4 終了後は対応する問題画面へ移行
+                        // PROGRESS_0〜4 正解終了後は対応する問題画面へ移行
                         changeState(GAME_STATES.QUESTION);
                     }
-                } else if (currentState === GAME_STATES.FALL) {
-                    changeState(GAME_STATES.GAMEOVER);
                 }
             });
 
@@ -932,6 +949,7 @@
     </script>
 </head>
 <body>
+    <!-- パスワード認証モーダル画面 -->
     <div id="auth-modal">
         <div class="auth-box">
             <h2>認証が必要です</h2>
@@ -940,17 +958,20 @@
         </div>
     </div>
 
+    <!-- 背景メディア描画領域 -->
     <div class="bg-container">
         <img id="bg-img" class="bg-media" src="" alt="背景画像">
         <video id="bg-video" class="bg-media" autoplay muted playsinline></video>
     </div>
 
+    <!-- UIレイヤー：タイトル画面 -->
     <div id="ui-title" class="ui-layer hidden">
         <p class="fullscreen-guide">[ F ]: 全画面表示</p>
         <h1 class="title">Title!!</h1>
         <p class="start-msg">PRESS ENTER TO START</p>
     </div>
 
+    <!-- UIレイヤー：ジャンル選択画面 -->
     <div id="ui-genre" class="ui-layer hidden">
         <h2 class="section-title">SELECT GENRE</h2>
         <div id="genre-cards" class="card-container">
@@ -960,6 +981,7 @@
         <p class="key-guide">[ SPACE ]: 左を選択 / [ ENTER ]: 右を選択</p>
     </div>
 
+    <!-- UIレイヤー：難易度選択画面 -->
     <div id="ui-difficulty" class="ui-layer hidden">
         <h2 class="section-title">SELECT DIFFICULTY</h2>
         <div id="diff-cards" class="card-container">
@@ -969,12 +991,15 @@
         <p class="key-guide">[ SPACE ]: 左を選択 / [ ENTER ]: 右を選択</p>
     </div>
 
+    <!-- UIレイヤー：クイズ問題・選択肢表示画面 -->
     <div id="ui-question" class="ui-layer hidden">
         <div class="quiz-container">
+            <!-- 問題文テキストボックス -->
             <div class="quiz-question-box">
                 <span id="quiz-text">問題文を取得中...</span>
             </div>
 
+            <!-- 選択肢ボックス（A/B） -->
             <div id="quiz-options" class="quiz-options-container">
                 <div class="quiz-option-card">
                     <span class="option-label">A [ SPACE ]</span>
@@ -988,14 +1013,13 @@
         </div>
     </div>
 
-    <div id="ui-fall" class="ui-layer hidden">
-    </div>
-
+    <!-- UIレイヤー：ゲームオーバー画面 -->
     <div id="ui-gameover" class="ui-layer hidden">
         <h1 class="gameover-title">GAME OVER</h1>
         <p class="start-msg">PRESS ENTER TO TITLE</p>
     </div>
 
+    <!-- UIレイヤー：クリア画面 -->
     <div id="ui-clear" class="ui-layer hidden">
         <h1 class="clear-title">CLEARED</h1>
     </div>
