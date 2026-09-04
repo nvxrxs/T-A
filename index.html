@@ -338,6 +338,46 @@
             border-radius: 1vh;
         }
 
+        /* 本家準拠：クリア問題インジケーター（画面左下） */
+        .stage-indicator {
+            position: absolute;
+            bottom: 3vh;
+            left: 3vw;
+            display: flex;
+            gap: 0.4vh;
+            background: #1e1f24;
+            padding: 0.5vh;
+            border-radius: 0.6vh;
+            border: 0.3vh solid #3a3c42;
+            box-shadow: 0 0.6vh 1.5vh rgba(0, 0, 0, 0.9), inset 0 0.2vh 0.4vh rgba(255, 255, 255, 0.15);
+            z-index: 20;
+            text-shadow: none;
+        }
+        .stage-slot {
+            width: 5.5vh;
+            height: 5.5vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 4.2vh;
+            font-weight: 900;
+            font-family: 'Arial Black', Impact, sans-serif;
+            border-radius: 0.3vh;
+            box-sizing: border-box;
+            /* 未クリア/挑戦中状態：奥に窪んだダークグレー枠＋鮮やかな黄色数字 */
+            background: #25272c;
+            color: #d6e828;
+            box-shadow: inset 0.3vh 0.3vh 0.6vh rgba(0, 0, 0, 0.95);
+            text-shadow: 0.1vh 0.1vh 0.2vh rgba(0, 0, 0, 0.8);
+        }
+        /* クリア済み状態：ピンクプレート＋赤色数字 */
+        .stage-slot.cleared {
+            background: #ff8597;
+            color: #c40018;
+            box-shadow: 0 0.2vh 0.4vh rgba(0, 0, 0, 0.4), inset 0 0.2vh 0.3vh rgba(255, 255, 255, 0.5);
+            text-shadow: none;
+        }
+
         /* --------------------------------------------------------------------------
            4-4. ゲームオーバー・クリア画面
            -------------------------------------------------------------------------- */
@@ -651,6 +691,21 @@
         // ==========================================================================
 
         /**
+         * 本家インジケーター（1〜5問クリア状態）の表示更新
+         */
+        function updateStageIndicator() {
+            for (let i = 1; i <= 5; i++) {
+                const slot = document.getElementById(`stage-slot-${i}`);
+                if (!slot) continue;
+                if (i <= questionCount) {
+                    slot.classList.add("cleared");
+                } else {
+                    slot.classList.remove("cleared");
+                }
+            }
+        }
+
+        /**
          * 選択肢コンテナ内の全タイマーおよびカウントダウン描画をクリア
          */
         function clearQuizTimers() {
@@ -811,6 +866,9 @@
                 renderOptionContent(document.getElementById("opt-a-text"), "---");
                 renderOptionContent(document.getElementById("opt-b-text"), "---");
             }
+
+            // クリア状況インジケーターの更新
+            updateStageIndicator();
         }
 
         /**
@@ -1146,6 +1204,15 @@
                     <span class="option-label">B [ ENTER ]</span>
                     <span id="opt-b-text" class="option-text">選択肢 B</span>
                 </div>
+            </div>
+
+            <!-- 本家準拠クリア問題インジケーター（画面左下） -->
+            <div id="stage-indicator" class="stage-indicator">
+                <div class="stage-slot" id="stage-slot-1">1</div>
+                <div class="stage-slot" id="stage-slot-2">2</div>
+                <div class="stage-slot" id="stage-slot-3">3</div>
+                <div class="stage-slot" id="stage-slot-4">4</div>
+                <div class="stage-slot" id="stage-slot-5">5</div>
             </div>
         </div>
     </div>
