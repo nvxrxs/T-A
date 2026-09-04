@@ -436,7 +436,7 @@
             [GAME_STATES.QUESTION_2]:  { video: "media/bg-quiz2.mp4", poster: "media/bg-quiz2.jpg", loop: true },
             [GAME_STATES.QUESTION_3]:  { video: "media/bg-quiz3.mp4", poster: "media/bg-quiz3.jpg", loop: true },
             [GAME_STATES.QUESTION_4]:  { video: "media/bg-quiz4.mp4", poster: "media/bg-quiz4.jpg", loop: true },
-            [GAME_STATES.TIMEOUT]:     { video: "media/bg-timeout.mp4", poster: "media/bg-timeout.png", loop: false }, // 時間切れ時：暗転および動画再生
+            [GAME_STATES.TIMEOUT]:     { video: "media/bg-timeout.mp4", poster: "media/bg-timeout.png", loop: false }, // 時間切れ時：暗転および動画再生（未検出時はposter）
             [GAME_STATES.GAMEOVER]:    { video: "media/bg-gameover.mp4", poster: "media/bg-gameover.JPG", loop: true },
             [GAME_STATES.CLEAR]:       { video: "media/bg-clear.mp4", poster: "media/bg-clear.jpg", loop: true }
         };
@@ -557,6 +557,7 @@
 
         /**
          * 指定されたステートに対応する背景メディア（静止画および動画）の再生切り替え
+         * 動画が存在する場合は暗転状態を維持して動画再生を開始し、動画ファイルが見つからない場合にのみ静止画を表示する
          */
         function playMedia(stateKey) {
             const media = MEDIA_PATHS[stateKey];
@@ -578,33 +579,36 @@
                 videoSrc  = media.video  || null;
             }
 
-            // 静止画の設定
-            if (posterSrc) {
-                imgElem.src = posterSrc;
-                imgElem.style.display = "block";
-            } else {
+            videoElem.loop = media.loop !== false;
+
+            if (videoSrc) {
+                // 動画がある場合は初期状態でポスターを非表示（暗転・黒背景を維持）
                 imgElem.removeAttribute("src");
                 imgElem.style.display = "none";
-            }
 
-            // 背景動画の設定（動画が存在しない場合は静止画を維持）
-            videoElem.loop = media.loop !== false;
-            if (videoSrc) {
+                // 動画が見つからない・ロード失敗時のフォールバック処理
+                const showPosterFallback = () => {
+                    videoElem.classList.remove("active");
+                    currentMediaVideo = null;
+                    if (posterSrc) {
+                        imgElem.src = posterSrc;
+                        imgElem.style.display = "block";
+                    }
+                };
+
                 if (currentMediaVideo !== videoSrc) {
                     currentMediaVideo = videoSrc;
+                    videoElem.classList.remove("active");
                     videoElem.src = videoSrc;
                     
-                    videoElem.onerror = () => {
-                        videoElem.classList.remove("active");
-                        currentMediaVideo = null;
-                    };
+                    videoElem.onerror = showPosterFallback;
 
                     const playPromise = videoElem.play();
                     if (playPromise !== undefined) {
                         playPromise.then(() => {
                             videoElem.classList.add("active");
                         }).catch(() => {
-                            videoElem.classList.remove("active");
+                            showPosterFallback();
                         });
                     }
                 }
@@ -613,6 +617,15 @@
                 videoElem.classList.remove("active");
                 videoElem.removeAttribute("src");
                 videoElem.load();
+
+                // 動画指定が存在しない場合はポスター画像を表示
+                if (posterSrc) {
+                    imgElem.src = posterSrc;
+                    imgElem.style.display = "block";
+                } else {
+                    imgElem.removeAttribute("src");
+                    imgElem.style.display = "none";
+                }
             }
         }
 
