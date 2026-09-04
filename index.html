@@ -125,6 +125,23 @@
             text-shadow: 0 0.4vh 1.5vh rgba(0, 0, 0, 0.95); /* 可認性向上のための影 */
         }
 
+        /* 暗転用黒カーテンオーバーレイ（UIより前面、モーダルより背面） */
+        #black-curtain {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #000;
+            z-index: 50;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.45s ease-in; /* 徐々に、ただ素早く暗転 */
+        }
+        #black-curtain.active {
+            opacity: 1;
+        }
+
         /* --------------------------------------------------------------------------
            4-1. タイトル画面
            -------------------------------------------------------------------------- */
@@ -644,6 +661,10 @@
                 countElem.textContent = "";
                 countElem.classList.remove("animate-count");
             }
+            const curtain = document.getElementById("black-curtain");
+            if (curtain && currentState !== GAME_STATES.TIMEOUT) {
+                curtain.classList.remove("active");
+            }
         }
 
         /**
@@ -659,7 +680,7 @@
         }
 
         /**
-         * クイズ回答制限時間タイマーの開始（完了2秒後からカウント、7秒後に時間切れ）
+         * クイズ回答制限時間タイマーの開始（完了2秒後からカウント、7秒後に暗転開始）
          */
         function startQuizTimers() {
             clearQuizTimers();
@@ -673,10 +694,23 @@
                 quizTimerIds.push(timerId);
             });
 
-            // 選択肢表示完了から7秒後に時間切れステートへ遷移
+            // 選択肢表示完了から7秒後に暗転開始、暗転完了（約0.45秒後）に時間切れステートへ遷移
             const timeoutId = setTimeout(() => {
-                clearQuizTimers();
-                changeState(GAME_STATES.TIMEOUT);
+                isAnimating = true; // 暗転中のキー入力を無効化
+                const curtain = document.getElementById("black-curtain");
+                if (curtain) {
+                    curtain.classList.add("active");
+                }
+
+                const curtainTimerId = setTimeout(() => {
+                    isAnimating = false;
+                    clearQuizTimers();
+                    changeState(GAME_STATES.TIMEOUT);
+                    if (curtain) {
+                        curtain.classList.remove("active");
+                    }
+                }, 450);
+                quizTimerIds.push(curtainTimerId);
             }, 7000);
             quizTimerIds.push(timeoutId);
         }
@@ -1062,6 +1096,9 @@
             <div id="auth-error" class="auth-error"></div>
         </div>
     </div>
+
+    <!-- 暗転用黒カーテンオーバーレイ -->
+    <div id="black-curtain"></div>
 
     <div class="bg-container">
         <img id="bg-img" class="bg-media" src="" alt="背景画像">
