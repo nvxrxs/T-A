@@ -206,6 +206,7 @@
             align-items: center;
             padding: 5vh 5vw;
             box-sizing: border-box;
+            position: relative;
         }
         /* 問題文ボックス */
         .quiz-question-box {
@@ -233,6 +234,32 @@
             100% {
                 opacity: 1;
                 transform: scale(1);
+            }
+        }
+        /* カウントダウン表示スタイル（問題と選択肢の間の空白） */
+        .quiz-countdown {
+            font-size: 14vh;
+            font-weight: 900;
+            color: #ff3333;
+            text-shadow: 0 0 2vh rgba(255, 0, 0, 0.9), 0 0 4vh rgba(0, 0, 0, 1);
+            height: 14vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            pointer-events: none;
+            opacity: 0;
+        }
+        .quiz-countdown.animate-count {
+            animation: countPop 0.8s ease-out forwards;
+        }
+        @keyframes countPop {
+            0% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: scale(2.4);
             }
         }
         /* 選択肢コンテナ */
@@ -338,11 +365,12 @@
             QUESTION_2: "QUESTION_2",
             QUESTION_3: "QUESTION_3",
             QUESTION_4: "QUESTION_4",
+            TIMEOUT: "TIMEOUT",           // 時間切れステート
             GAMEOVER: "GAMEOVER",
             CLEAR: "CLEAR"
         };
         
-        // 各ステートにおける背景メディアの設定（静止画URL 4種 + 動画URL 4種）
+        // 各ステートにおける背景メディアの設定（静止画URL + 動画URL）
         const MEDIA_PATHS = {
             [GAME_STATES.TITLE]:       { video: "media/bg-title.mp4", poster: "media/bg-title.jpg", loop: true },
             [GAME_STATES.GENRE]:       { video: "media/bg-title.mp4", poster: "media/bg-title.jpg", loop: true },
@@ -408,6 +436,7 @@
             [GAME_STATES.QUESTION_2]:  { video: "media/bg-quiz2.mp4", poster: "media/bg-quiz2.jpg", loop: true },
             [GAME_STATES.QUESTION_3]:  { video: "media/bg-quiz3.mp4", poster: "media/bg-quiz3.jpg", loop: true },
             [GAME_STATES.QUESTION_4]:  { video: "media/bg-quiz4.mp4", poster: "media/bg-quiz4.jpg", loop: true },
+            [GAME_STATES.TIMEOUT]:     { video: "media/bg-timeout.mp4", poster: "", loop: false }, // 時間切れ時：暗転および動画再生
             [GAME_STATES.GAMEOVER]:    { video: "media/bg-gameover.mp4", poster: "media/bg-gameover.JPG", loop: true },
             [GAME_STATES.CLEAR]:       { video: "media/bg-clear.mp4", poster: "media/bg-clear.jpg", loop: true }
         };
@@ -429,6 +458,7 @@
         let currentQuestion = null;          // 現在表示中の問題オブジェクト
         let lastAnswerSide = "L";            // 直前に回答した左右 ("L" または "R")
         let lastAnswerCorrect = true;        // 直前の回答の正誤 (true または false)
+        let quizTimerIds = [];               // 制限時間・カウントダウンタイマーID配列
 
         // ==========================================================================
         // 3. ユーティリティ・システム制御関数
@@ -510,7 +540,7 @@
         function preloadMedia() {
             Object.values(MEDIA_PATHS).forEach(media => {
                 Object.values(media).forEach(val => {
-                    if (typeof val === "string") {
+                    if (typeof val === "string" && val.length > 0) {
                         if (/\.(jpg|jpeg|png|gif|webp|svg)$/i.test(val)) {
                             const img = new Image();
                             img.src = val;
@@ -589,6 +619,54 @@
         // ==========================================================================
         // 4. UI・クイズロジック関連関数
         // ==========================================================================
+
+        /**
+         * 選択肢コンテナ内の全タイマーおよびカウントダウン描画をクリア
+         */
+        function clearQuizTimers() {
+            quizTimerIds.forEach(id => clearTimeout(id));
+            quizTimerIds = [];
+            const countElem = document.getElementById("quiz-countdown");
+            if (countElem) {
+                countElem.textContent = "";
+                countElem.classList.remove("animate-count");
+            }
+        }
+
+        /**
+         * カウントダウンの数値を更新し、アニメーションをトリガー
+         */
+        function showCountdown(num) {
+            const countElem = document.getElementById("quiz-countdown");
+            if (!countElem) return;
+            countElem.textContent = num;
+            countElem.classList.remove("animate-count");
+            void countElem.offsetWidth; // DOMリフロー発生によるアニメーション再実行
+            countElem.classList.add("animate-count");
+        }
+
+        /**
+         * クイズ回答制限時間タイマーの開始（完了2秒後からカウント、7秒後に時間切れ）
+         */
+        function startQuizTimers() {
+            clearQuizTimers();
+
+            // 選択肢表示完了から2秒後（残り5秒）〜6秒後（残り1秒）までのカウントダウン
+            const countdownValues = [5, 4, 3, 2, 1];
+            countdownValues.forEach((val, idx) => {
+                const timerId = setTimeout(() => {
+                    showCountdown(val);
+                }, (2 + idx) * 1000);
+                quizTimerIds.push(timerId);
+            });
+
+            // 選択肢表示完了から7秒後に時間切れステートへ遷移
+            const timeoutId = setTimeout(() => {
+                clearQuizTimers();
+                changeState(GAME_STATES.TIMEOUT);
+            }, 7000);
+            quizTimerIds.push(timeoutId);
+        }
 
         /**
          * 選択されたカードを中央に寄せて拡大し、非選択カードを縮小しながら消すエフェクト
@@ -692,6 +770,8 @@
          * クイズ出題時のアニメーション順次実行制御
          */
         function triggerQuizSequence() {
+            clearQuizTimers();
+
             const qBox = document.querySelector(".quiz-question-box");
             const optsContainer = document.querySelector(".quiz-options-container");
 
@@ -708,8 +788,10 @@
                 optsContainer.classList.add("animate-fade");
             }, 1550);
 
+            // 2150ms: 選択肢フェードインアニメーション完了
             setTimeout(() => {
                 isAnimating = false;
+                startQuizTimers(); // 表示完了時点からタイマー計測開始
             }, 2150);
         }
 
@@ -717,6 +799,7 @@
          * ゲーム状態（ステート）の遷移管理メイン関数
          */
         function changeState(newState) {
+            clearQuizTimers();
             resetCardStyles();
 
             let targetState = newState;
@@ -745,6 +828,8 @@
                 loadQuizData();
                 document.getElementById("ui-question").classList.remove("hidden");
                 triggerQuizSequence();
+            } else if (targetState === GAME_STATES.TIMEOUT) {
+                // 時間切れ時はUIを非表示（暗転）とし指定動画のみ再生
             } else if (targetState === GAME_STATES.GAMEOVER) {
                 document.getElementById("ui-gameover").classList.remove("hidden");
             } else if (targetState === GAME_STATES.CLEAR) {
@@ -756,6 +841,8 @@
          * ユーザーの回答選択（A/B）判定処理
          */
         function handleAnswerSubmit(userChoice) {
+            clearQuizTimers();
+
             const side = userChoice.toUpperCase() === "A" ? "L" : "R";
             let isCorrect = false;
 
@@ -792,16 +879,16 @@
                 return;
             }
 
-            // --- [ N ] キー: 進行動画のスキップ制御 ---
+            // --- [ N ] キー: 進行動画・時間切れ動画のスキップ制御 ---
             if (e.code === "KeyN" || e.key === "n" || e.key === "N") {
-                if (currentState.startsWith("PROGRESS_")) {
+                if (currentState.startsWith("PROGRESS_") || currentState === GAME_STATES.TIMEOUT) {
                     e.preventDefault();
 
                     const videoElem = document.getElementById("bg-video");
                     videoElem.pause();
 
-                    if (!lastAnswerCorrect) {
-                        // 不正解の進行中の場合は直接ゲームオーバー画面へ
+                    if (currentState === GAME_STATES.TIMEOUT || !lastAnswerCorrect) {
+                        // 時間切れ時または不正解の進行中の場合は直接ゲームオーバー画面へ
                         changeState(GAME_STATES.GAMEOVER);
                     } else if (currentState === GAME_STATES.PROGRESS_5) {
                         // PROGRESS_5 正解終了時はクリア画面へ
@@ -874,12 +961,14 @@
             }
             else if (currentState.startsWith("QUESTION_")) {
                 if (e.code === "Space") {
+                    clearQuizTimers();
                     isAnimating = true;
                     animateSelection("quiz-options", ".quiz-option-card", 0, () => {
                         isAnimating = false;
                         handleAnswerSubmit("A");
                     });
                 } else if (e.code === "Enter") {
+                    clearQuizTimers();
                     isAnimating = true;
                     animateSelection("quiz-options", ".quiz-option-card", 1, () => {
                         isAnimating = false;
@@ -941,6 +1030,9 @@
                         // PROGRESS_0〜4 正解終了後は対応する問題画面へ移行
                         changeState(GAME_STATES.QUESTION);
                     }
+                } else if (currentState === GAME_STATES.TIMEOUT) {
+                    // 時間切れ動画終了後はゲームオーバー画面へ移行
+                    changeState(GAME_STATES.GAMEOVER);
                 }
             });
 
@@ -950,7 +1042,6 @@
     </script>
 </head>
 <body>
-    <!-- パスワード認証モーダル画面 -->
     <div id="auth-modal">
         <div class="auth-box">
             <h2>認証が必要です</h2>
@@ -959,20 +1050,17 @@
         </div>
     </div>
 
-    <!-- 背景メディア描画領域 -->
     <div class="bg-container">
         <img id="bg-img" class="bg-media" src="" alt="背景画像">
         <video id="bg-video" class="bg-media" autoplay muted playsinline></video>
     </div>
 
-    <!-- UIレイヤー：タイトル画面 -->
     <div id="ui-title" class="ui-layer hidden">
         <p class="fullscreen-guide">[ F ]: 全画面表示</p>
         <h1 class="title">Title!!</h1>
         <p class="start-msg">PRESS ENTER TO START</p>
     </div>
 
-    <!-- UIレイヤー：ジャンル選択画面 -->
     <div id="ui-genre" class="ui-layer hidden">
         <h2 class="section-title">SELECT GENRE</h2>
         <div id="genre-cards" class="card-container">
@@ -982,7 +1070,6 @@
         <p class="key-guide">[ SPACE ]: 左を選択 / [ ENTER ]: 右を選択</p>
     </div>
 
-    <!-- UIレイヤー：難易度選択画面 -->
     <div id="ui-difficulty" class="ui-layer hidden">
         <h2 class="section-title">SELECT DIFFICULTY</h2>
         <div id="diff-cards" class="card-container">
@@ -992,15 +1079,14 @@
         <p class="key-guide">[ SPACE ]: 左を選択 / [ ENTER ]: 右を選択</p>
     </div>
 
-    <!-- UIレイヤー：クイズ問題・選択肢表示画面 -->
     <div id="ui-question" class="ui-layer hidden">
         <div class="quiz-container">
-            <!-- 問題文テキストボックス -->
             <div class="quiz-question-box">
                 <span id="quiz-text">問題文を取得中...</span>
             </div>
 
-            <!-- 選択肢ボックス（A/B） -->
+            <div id="quiz-countdown" class="quiz-countdown"></div>
+
             <div id="quiz-options" class="quiz-options-container">
                 <div class="quiz-option-card">
                     <span class="option-label">A [ SPACE ]</span>
@@ -1014,13 +1100,11 @@
         </div>
     </div>
 
-    <!-- UIレイヤー：ゲームオーバー画面 -->
     <div id="ui-gameover" class="ui-layer hidden">
         <h1 class="gameover-title">GAME OVER</h1>
         <p class="start-msg">PRESS ENTER TO TITLE</p>
     </div>
 
-    <!-- UIレイヤー：クリア画面 -->
     <div id="ui-clear" class="ui-layer hidden">
         <h1 class="clear-title">CLEARED</h1>
     </div>
