@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>トロッコアドベンチャー</title>
     <style>
         /* ==========================================================================
            1. 画面全体の基本スタイル
@@ -140,6 +140,18 @@
         }
         #black-curtain.active {
             opacity: 1;
+        }
+
+        /* 常に右下に表示するロゴ */
+        .watermark-logo {
+            position: fixed;
+            bottom: 3vh;
+            right: 3vw;
+            height: 8vh; /* 画面の高さに応じて自動スケール */
+            max-width: 20vw;
+            object-fit: contain;
+            z-index: 30; /* 暗転カーテン(50)の下、UI要素(10〜20)の上に配置 */
+            pointer-events: none; /* クリック等の干渉を防ぐ */
         }
 
         /* --------------------------------------------------------------------------
@@ -1157,6 +1169,9 @@
 
     <!-- 暗転用黒カーテンオーバーレイ -->
     <div id="black-curtain"></div>
+
+    <!-- 常時右下に表示するロゴ画像 -->
+    <img src="media/Logo.png" alt="Logo" class="watermark-logo">
 
     <div class="bg-container">
         <img id="bg-img" class="bg-media" src="" alt="背景画像">
