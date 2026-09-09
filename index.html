@@ -147,7 +147,7 @@
             position: fixed;
             bottom: 0vh;
             right: 0vw;
-            height: 12vh; /* 画面の高さに応じて自動スケール */
+            height: 12vh; /* インジケーターと揃える基準の高さ */
             max-width: 20vw;
             object-fit: contain;
             z-index: 30; /* 暗転カーテン(50)の下、UI要素(10〜20)の上に配置 */
@@ -350,43 +350,46 @@
             border-radius: 1vh;
         }
 
-        /* 本家準拠：クリア問題インジケーター（画面左下） */
+        /* 本家準拠：クリア問題インジケーター（ロゴと高さを同期・左下に密着） */
         .stage-indicator {
-            position: absolute;
-            bottom: 3vh;
-            left: 3vw;
+            position: fixed;
+            bottom: 0vh;
+            left: 0vw;
+            height: 12vh; /* ロゴ画像と高さを完全に一致 */
             display: flex;
-            gap: 0.4vh;
+            gap: 0.8vh;
             background: #1e1f24;
-            padding: 0.5vh;
-            border-radius: 0.6vh;
-            border: 0.3vh solid #3a3c42;
+            padding: 1vh 1.2vh; /* 上下1vh、左右1.2vh */
+            border-top: 0.4vh solid #3a3c42;
+            border-right: 0.4vh solid #3a3c42;
+            border-radius: 0 1.2vh 0 0; /* 画面左下に密着させるため右上のみ角丸 */
             box-shadow: 0 0.6vh 1.5vh rgba(0, 0, 0, 0.9), inset 0 0.2vh 0.4vh rgba(255, 255, 255, 0.15);
             z-index: 20;
             text-shadow: none;
+            box-sizing: border-box;
         }
         .stage-slot {
-            width: 5.5vh;
-            height: 5.5vh;
+            width: 9.6vh; /* 親の12vh - border(0.4vh) - padding上下(2vh) = 9.6vh四方 */
+            height: 100%;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 4.2vh;
+            font-size: 7vh;
             font-weight: 900;
             font-family: 'Arial Black', Impact, sans-serif;
-            border-radius: 0.3vh;
+            border-radius: 0.5vh;
             box-sizing: border-box;
             /* 未クリア/挑戦中状態：奥に窪んだダークグレー枠＋鮮やかな黄色数字 */
             background: #25272c;
             color: #d6e828;
-            box-shadow: inset 0.3vh 0.3vh 0.6vh rgba(0, 0, 0, 0.95);
-            text-shadow: 0.1vh 0.1vh 0.2vh rgba(0, 0, 0, 0.8);
+            box-shadow: inset 0.4vh 0.4vh 0.8vh rgba(0, 0, 0, 0.95);
+            text-shadow: 0.2vh 0.2vh 0.3vh rgba(0, 0, 0, 0.8);
         }
         /* クリア済み状態：ピンクプレート＋赤色数字 */
         .stage-slot.cleared {
             background: #ff8597;
             color: #c40018;
-            box-shadow: 0 0.2vh 0.4vh rgba(0, 0, 0, 0.4), inset 0 0.2vh 0.3vh rgba(255, 255, 255, 0.5);
+            box-shadow: 0 0.3vh 0.5vh rgba(0, 0, 0, 0.4), inset 0 0.3vh 0.4vh rgba(255, 255, 255, 0.5);
             text-shadow: none;
         }
 
